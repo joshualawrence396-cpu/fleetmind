@@ -1,0 +1,10 @@
+﻿version: '3.8'
+
+services:
+  routing-service:
+    build: ./apps/routing-service
+    ports:
+      - "8001:8001"
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped

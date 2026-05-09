@@ -1,0 +1,158 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  title     String
+  message   String
+  type      String   @default("INFO") // INFO, WARNING, ERROR, SUCCESS
+  category  String   @default("GENERAL") // GENERAL, ORDER, VEHICLE, MAINTENANCE, FUEL
+  read      Boolean  @default(false)
+  data      Json?    // Additional data for the notification
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  password  String
+  role      String   @default("user")
+  notifications Notification[]
+  sentMessages ChatMessage[] @relation("ChatFrom")
+  receivedMessages ChatMessage[] @relation("ChatTo")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Vehicle {
+  id           String   @id @default(cuid())
+  registration String   @unique
+  make         String
+  model        String
+  status       String   @default("AVAILABLE")
+  latitude     Float?
+  longitude    Float?
+  driverId     String?  @unique
+  driver       Driver?  @relation(fields: [driverId], references: [id])
+  orders       Order[]
+  fuelLogs     FuelLog[]
+  maintenance  Maintenance[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Driver {
+  id        String    @id @default(cuid())
+  name      String
+  email     String    @unique
+  phone     String?
+  status    String    @default("ACTIVE")
+  vehicle   Vehicle?
+  orders    Order[]
+  fuelLogs  FuelLog[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Order {
+  id              String    @id @default(cuid())
+  orderNumber     String    @unique
+  customerName    String
+  customerEmail   String
+  customerPhone   String
+  deliveryAddress String
+  pickupAddress   String
+  status          String    @default("PENDING")
+  priority        String    @default("NORMAL")
+  driverName      String?
+  driverId        String?
+  driver          Driver?   @relation(fields: [driverId], references: [id])
+  vehicleId       String?
+  vehicle         Vehicle?  @relation(fields: [vehicleId], references: [id])
+  scheduledDate   DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+model Warehouse {
+  id           String          @id @default(cuid())
+  name         String
+  location     String
+  address      String
+  capacity     Int
+  currentStock Int             @default(0)
+  manager      String?
+  phone        String?
+  items        InventoryItem[]
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+}
+
+model InventoryItem {
+  id          String    @id @default(cuid())
+  name        String
+  sku         String    @unique
+  category    String
+  quantity    Int
+  unitPrice   Float
+  warehouseId String
+  warehouse   Warehouse @relation(fields: [warehouseId], references: [id])
+  minStock    Int       @default(0)
+  maxStock    Int       @default(1000)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model FuelLog {
+  id          String   @id @default(cuid())
+  vehicleId   String
+  vehicle     Vehicle  @relation(fields: [vehicleId], references: [id])
+  liters      Float
+  cost        Float
+  odometer    Int?
+  fuelType    String   @default("DIESEL")
+  station     String?
+  driverId    String?
+  driver      Driver?  @relation(fields: [driverId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Maintenance {
+  id          String   @id @default(cuid())
+  vehicleId   String
+  vehicle     Vehicle  @relation(fields: [vehicleId], references: [id])
+  type        String   // OIL_CHANGE, BRAKE_CHECK, TYRE_ROTATION, etc.
+  description String
+  dueDate     DateTime
+  dueKm       Int?
+  status      String   @default("PENDING") // PENDING, COMPLETED, OVERDUE
+  priority    String   @default("NORMAL") // LOW, NORMAL, HIGH, CRITICAL
+  cost        Float?
+  notes       String?
+  completedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ChatMessage {
+  id        String   @id @default(cuid())
+  fromId    String
+  from      User     @relation("ChatFrom", fields: [fromId], references: [id])
+  toId      String
+  to        User     @relation("ChatTo", fields: [toId], references: [id])
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

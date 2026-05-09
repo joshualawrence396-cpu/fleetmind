@@ -1,0 +1,44 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Offline - FleetMind Driver</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            text-align: center;
+            padding: 50px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            max-width: 400px;
+        }
+        h1 { font-size: 2em; margin-bottom: 20px; }
+        p { margin-bottom: 30px; opacity: 0.9; }
+        button {
+            background: white;
+            color: #667eea;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📡 You're Offline</h1>
+        <p>Please check your internet connection and try again.</p>
+        <button onclick="location.reload()">Retry Connection</button>
+        <p style="margin-top: 20px; font-size: 14px;">Your previous actions will sync automatically when you're back online.</p>
+    </div>
+</body>
+</html>
