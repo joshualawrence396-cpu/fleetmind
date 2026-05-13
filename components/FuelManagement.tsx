@@ -1,272 +1,108 @@
-'use client'
-
-import { useState, useEffect } from 'react'
+"use client"
+import { useState, useEffect } from "react"
+import { Fuel, Plus, TrendingDown } from "lucide-react"
 
 export function FuelManagement() {
-  const [fuelLogs, setFuelLogs] = useState([])
+  const [logs, setLogs] = useState([])
   const [vehicles, setVehicles] = useState([])
   const [drivers, setDrivers] = useState([])
-  const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
-  const [formData, setFormData] = useState({
-    vehicleId: '',
-    driverId: '',
-    liters: '',
-    cost: '',
-    odometer: '',
-    fuelType: 'DIESEL',
-    station: ''
-  })
+  const [form, setForm] = useState({ vehicleId:"", driverId:"", litres:"", costPerLitre:"", station:"", date: new Date().toISOString().split("T")[0] })
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    loadData()
+    fetch("/api/vehicles").then(r=>r.json()).then(v=>setVehicles(v||[]))
+    fetch("/api/drivers").then(r=>r.json()).then(d=>setDrivers(d||[]))
+    fetch("/api/fuel").then(r=>r.json()).then(f=>setLogs(f||[]))
   }, [])
 
-  const loadData = async () => {
-    try {
-      const [fuelRes, vehicleRes, driverRes] = await Promise.all([
-        fetch('/api/fuel'),
-        fetch('/api/vehicles'),
-        fetch('/api/drivers')
-      ])
-
-      if (fuelRes.ok) setFuelLogs(await fuelRes.json())
-      if (vehicleRes.ok) setVehicles(await vehicleRes.json())
-      if (driverRes.ok) setDrivers(await driverRes.json())
-    } catch (error) {
-      console.error('Failed to load fuel data:', error)
+  const addLog = async () => {
+    if (!form.vehicleId || !form.litres || !form.costPerLitre) return
+    setLoading(true)
+    const res = await fetch("/api/fuel", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(form) })
+    if (res.ok) {
+      const entry = await res.json()
+      setLogs([entry, ...logs])
+      setShowForm(false)
+      setForm({ vehicleId:"", driverId:"", litres:"", costPerLitre:"", station:"", date: new Date().toISOString().split("T")[0] })
     }
     setLoading(false)
   }
 
-  const handleSubmit = async (e) => {
-    e.preventDefault()
+  const totalCost = logs.reduce((s,l)=>s+(l.totalCost||0),0)
+  const totalLitres = logs.reduce((s,l)=>s+(l.litres||0),0)
+  const avgPrice = totalLitres > 0 ? totalCost/totalLitres : 0
 
-    try {
-      const response = await fetch('/api/fuel', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
-      })
-
-      if (response.ok) {
-        setFormData({
-          vehicleId: '',
-          driverId: '',
-          liters: '',
-          cost: '',
-          odometer: '',
-          fuelType: 'DIESEL',
-          station: ''
-        })
-        setShowForm(false)
-        loadData()
-      }
-    } catch (error) {
-      console.error('Failed to create fuel log:', error)
-    }
-  }
-
-  const calculateStats = () => {
-    const totalCost = fuelLogs.reduce((sum, log) => sum + log.cost, 0)
-    const totalLiters = fuelLogs.reduce((sum, log) => sum + log.liters, 0)
-    const avgPricePerLiter = totalLiters > 0 ? totalCost / totalLiters : 0
-
-    return { totalCost, totalLiters, avgPricePerLiter }
-  }
-
-  const stats = calculateStats()
-
-  if (loading) {
-    return <div className="text-center py-8">Loading fuel data...</div>
-  }
+  const inp = { width:"100%",padding:"10px 14px",marginBottom:10,background:"rgba(255,255,255,0.04)",border:"1px solid rgba(99,102,241,0.2)",borderRadius:10,fontSize:14,color:"#e2e8f0",outline:"none",boxSizing:"border-box" as const }
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">Fuel Management</h2>
-        <button
-          onClick={() => setShowForm(!showForm)}
-          className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
-        >
-          {showForm ? 'Cancel' : 'Add Fuel Log'}
-        </button>
+    <div>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:24}}>
+        <div style={{display:"flex",alignItems:"center",gap:10}}>
+          <div style={{width:40,height:40,borderRadius:10,background:"rgba(99,102,241,0.1)",display:"flex",alignItems:"center",justifyContent:"center"}}><Fuel size={20} color="#6366f1"/></div>
+          <div><div style={{fontSize:18,fontWeight:"700",color:"white"}}>Fuel Management</div><div style={{fontSize:12,color:"#475569"}}>Track fuel costs and consumption</div></div>
+        </div>
+        <button onClick={()=>setShowForm(!showForm)} style={{padding:"9px 18px",background:"linear-gradient(135deg,#6366f1,#8b5cf6)",border:"none",borderRadius:10,color:"white",cursor:"pointer",fontSize:13,fontWeight:"600",display:"flex",alignItems:"center",gap:6}}><Plus size={14}/> Add Fuel Log</button>
       </div>
 
-      {/* Fuel Statistics */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="bg-blue-50 p-4 rounded-lg">
-          <h3 className="text-lg font-semibold text-blue-900">Total Cost</h3>
-          <p className="text-2xl font-bold text-blue-600">R{stats.totalCost.toFixed(2)}</p>
-        </div>
-        <div className="bg-green-50 p-4 rounded-lg">
-          <h3 className="text-lg font-semibold text-green-900">Total Liters</h3>
-          <p className="text-2xl font-bold text-green-600">{stats.totalLiters.toFixed(1)}L</p>
-        </div>
-        <div className="bg-purple-50 p-4 rounded-lg">
-          <h3 className="text-lg font-semibold text-purple-900">Avg Price/Liter</h3>
-          <p className="text-2xl font-bold text-purple-600">R{stats.avgPricePerLiter.toFixed(2)}</p>
-        </div>
-      </div>
-
-      {/* Add Fuel Log Form */}
       {showForm && (
-        <form onSubmit={handleSubmit} className="bg-gray-50 p-4 rounded-lg mb-6">
-          <h3 className="text-lg font-semibold mb-4">Add Fuel Log</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Vehicle</label>
-              <select
-                value={formData.vehicleId}
-                onChange={(e) => setFormData({...formData, vehicleId: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                required
-              >
-                <option value="">Select Vehicle</option>
-                {vehicles.map(vehicle => (
-                  <option key={vehicle.id} value={vehicle.id}>
-                    {vehicle.registration} - {vehicle.make} {vehicle.model}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Driver (Optional)</label>
-              <select
-                value={formData.driverId}
-                onChange={(e) => setFormData({...formData, driverId: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
-              >
-                <option value="">Select Driver</option>
-                {drivers.map(driver => (
-                  <option key={driver.id} value={driver.id}>{driver.name}</option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Liters</label>
-              <input
-                type="number"
-                step="0.1"
-                value={formData.liters}
-                onChange={(e) => setFormData({...formData, liters: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Cost (R)</label>
-              <input
-                type="number"
-                step="0.01"
-                value={formData.cost}
-                onChange={(e) => setFormData({...formData, cost: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Odometer (km)</label>
-              <input
-                type="number"
-                value={formData.odometer}
-                onChange={(e) => setFormData({...formData, odometer: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Fuel Type</label>
-              <select
-                value={formData.fuelType}
-                onChange={(e) => setFormData({...formData, fuelType: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
-              >
-                <option value="DIESEL">Diesel</option>
-                <option value="PETROL">Petrol</option>
-                <option value="LPG">LPG</option>
-              </select>
-            </div>
-
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Station (Optional)</label>
-              <input
-                type="text"
-                value={formData.station}
-                onChange={(e) => setFormData({...formData, station: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                placeholder="Fuel station name"
-              />
-            </div>
+        <div style={{background:"rgba(99,102,241,0.05)",borderRadius:14,padding:20,marginBottom:20,border:"1px solid rgba(99,102,241,0.2)"}}>
+          <div style={{fontSize:15,fontWeight:"600",color:"white",marginBottom:16}}>New Fuel Log</div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+            <select value={form.vehicleId} onChange={e=>setForm({...form,vehicleId:e.target.value})} style={inp}>
+              <option value="">Select Vehicle *</option>
+              {vehicles.map(v=><option key={v.id} value={v.id}>{v.registration} - {v.make} {v.model}</option>)}
+            </select>
+            <select value={form.driverId} onChange={e=>setForm({...form,driverId:e.target.value})} style={inp}>
+              <option value="">Select Driver (Optional)</option>
+              {drivers.map(d=><option key={d.id} value={d.id}>{d.name}</option>)}
+            </select>
+            <input type="number" placeholder="Litres *" value={form.litres} onChange={e=>setForm({...form,litres:e.target.value})} style={inp}/>
+            <input type="number" step="0.01" placeholder="Cost per Litre (R) *" value={form.costPerLitre} onChange={e=>setForm({...form,costPerLitre:e.target.value})} style={inp}/>
+            <input type="text" placeholder="Station Name" value={form.station} onChange={e=>setForm({...form,station:e.target.value})} style={inp}/>
+            <input type="date" value={form.date} onChange={e=>setForm({...form,date:e.target.value})} style={inp}/>
           </div>
-
-          <div className="mt-4 flex gap-2">
-            <button
-              type="submit"
-              className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700"
-            >
-              Save Fuel Log
-            </button>
-            <button
-              type="button"
-              onClick={() => setShowForm(false)}
-              className="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700"
-            >
-              Cancel
-            </button>
+          {form.litres && form.costPerLitre && (
+            <div style={{background:"rgba(16,185,129,0.1)",border:"1px solid rgba(16,185,129,0.2)",padding:"10px 14px",borderRadius:8,marginBottom:12,color:"#34d399",fontWeight:"600"}}>
+              Total Cost: R{(parseFloat(form.litres)*parseFloat(form.costPerLitre)).toFixed(2)}
+            </div>
+          )}
+          <div style={{display:"flex",gap:10}}>
+            <button onClick={()=>setShowForm(false)} style={{flex:1,padding:10,background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:8,color:"#94a3b8",cursor:"pointer"}}>Cancel</button>
+            <button onClick={addLog} disabled={loading} style={{flex:1,padding:10,background:"linear-gradient(135deg,#10b981,#059669)",border:"none",borderRadius:8,color:"white",cursor:"pointer",fontWeight:"600"}}>{loading?"Saving...":"Save Log"}</button>
           </div>
-        </form>
-      )}
-
-      {/* Fuel Logs Table */}
-      <div className="overflow-x-auto">
-        <table className="min-w-full table-auto">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Vehicle</th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Driver</th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Liters</th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Cost</th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Station</th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {fuelLogs.map((log) => (
-              <tr key={log.id}>
-                <td className="px-4 py-2 text-sm text-gray-900">
-                  {new Date(log.createdAt).toLocaleDateString()}
-                </td>
-                <td className="px-4 py-2 text-sm text-gray-900">
-                  {log.vehicle?.registration || 'N/A'}
-                </td>
-                <td className="px-4 py-2 text-sm text-gray-900">
-                  {log.driver?.name || 'N/A'}
-                </td>
-                <td className="px-4 py-2 text-sm text-gray-900">
-                  {log.liters}L
-                </td>
-                <td className="px-4 py-2 text-sm text-gray-900">
-                  R{log.cost.toFixed(2)}
-                </td>
-                <td className="px-4 py-2 text-sm text-gray-900">
-                  {log.station || 'N/A'}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {fuelLogs.length === 0 && (
-        <div className="text-center py-8 text-gray-500">
-          No fuel logs recorded yet. Add your first fuel log above.
         </div>
       )}
+
+      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:16,marginBottom:20}}>
+        {[
+          {label:"Total Cost",value:"R"+totalCost.toFixed(2),icon:<TrendingDown size={20} color="#ef4444"/>,color:"#ef4444"},
+          {label:"Total Litres",value:totalLitres.toFixed(1)+"L",icon:<Fuel size={20} color="#6366f1"/>,color:"#6366f1"},
+          {label:"Avg per Litre",value:"R"+avgPrice.toFixed(2),icon:<Fuel size={20} color="#f59e0b"/>,color:"#f59e0b"},
+        ].map(s=>(
+          <div key={s.label} style={{background:"rgba(255,255,255,0.03)",borderRadius:12,padding:18,border:"1px solid rgba(99,102,241,0.1)",display:"flex",alignItems:"center",gap:14}}>
+            <div style={{width:40,height:40,borderRadius:10,background:s.color+"15",display:"flex",alignItems:"center",justifyContent:"center"}}>{s.icon}</div>
+            <div><div style={{fontSize:20,fontWeight:"700",color:s.color}}>{s.value}</div><div style={{fontSize:12,color:"#475569"}}>{s.label}</div></div>
+          </div>
+        ))}
+      </div>
+
+      <div style={{background:"rgba(255,255,255,0.02)",borderRadius:12,overflow:"hidden",border:"1px solid rgba(99,102,241,0.1)"}}>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr 1fr 1fr",gap:8,padding:"12px 16px",borderBottom:"1px solid rgba(99,102,241,0.1)",fontSize:11,fontWeight:"700",color:"#475569",letterSpacing:"0.5px"}}>
+          <span>DATE</span><span>VEHICLE</span><span>DRIVER</span><span>LITRES</span><span>COST</span><span>STATION</span>
+        </div>
+        {logs.length === 0 && <div style={{padding:40,textAlign:"center",color:"#334155",fontSize:14}}>No fuel logs yet. Add your first log above.</div>}
+        {logs.map((l,i)=>(
+          <div key={l.id||i} style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr 1fr 1fr",gap:8,padding:"12px 16px",borderBottom:"1px solid rgba(99,102,241,0.05)",fontSize:13,alignItems:"center"}}>
+            <span style={{color:"#94a3b8"}}>{l.date ? new Date(l.date).toLocaleDateString() : "-"}</span>
+            <span style={{color:"#a5b4fc",fontWeight:"500"}}>{l.vehicle?.registration||"-"}</span>
+            <span style={{color:"#e2e8f0"}}>{l.driver?.name||"-"}</span>
+            <span style={{color:"#e2e8f0"}}>{l.litres}L</span>
+            <span style={{color:"#34d399",fontWeight:"600"}}>R{(l.totalCost||0).toFixed(2)}</span>
+            <span style={{color:"#475569"}}>{l.station||"-"}</span>
+          </div>
+        ))}
+      </div>
     </div>
   )
 }

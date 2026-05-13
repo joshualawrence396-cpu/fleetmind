@@ -1,4 +1,4 @@
-﻿import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { redis, STREAMS, publishToStream } from '@/lib/redis'
 import { prisma } from '@/lib/prisma'
 
@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
     // Update in database
     try {
       await prisma.
-        UPDATE "Vehicle" 
+        // UPDATE "Vehicle" 
         SET last_location = ST_SetSRID(ST_MakePoint(, ), 4326)::geography
         WHERE id = 
       
@@ -37,3 +37,4 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Failed to update location' }, { status: 500 })
   }
 }
+

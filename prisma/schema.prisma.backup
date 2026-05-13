@@ -1,842 +1,234 @@
-﻿// schema.prisma
 generator client {
-  provider        = "prisma-client-js"
-  previewFeatures = ["postgresqlExtensions", "fullTextSearch"]
+  provider = "prisma-client-js"
 }
 
 datasource db {
-  provider   = "postgresql"
-  url        = env("DATABASE_URL")
-  extensions = [postgis, postgis_topology, pg_trgm, pgcrypto, citext, timescaledb]
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
-// ============================================================
-//  TENANCY: Carriers (the businesses using FleetMind)
-// ============================================================
-
-model Carrier {
-  id              String   @id @default(cuid())
-  slug            String   @unique
-  name            String
-  tradingName     String?
-  countryCode     String   @default("ZA")
-  baseCurrency    String   @default("ZAR")
-  timezone        String   @default("Africa/Johannesburg")
-  isActive        Boolean  @default(true)
-
-  staff           Staff[]
-  hubs            Hub[]
-  vehicles        Vehicle[]
-  drivers         Driver[]
-  shippers        Shipper[]
-  shipments       Shipment[]
-  routes          Route[]
-  warehouses      Warehouse[]
-  inventoryNodes  InventoryNode[]
-  courierAccounts CourierAccount[]
-
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  password  String
+  role      String   @default("user")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
-model Staff {
-  id          String   @id @default(cuid())
-  carrierId   String
-  email       String   @unique
-  fullName    String
-  role        StaffRole
-  clerkId     String   @unique
-  hubIds      String[]  // hubs this user is responsible for
-  isActive    Boolean  @default(true)
-
-  carrier     Carrier  @relation(fields: [carrierId], references: [id])
+model Vehicle {
+  id                 String              @id @default(cuid())
+  registration       String              @unique
+  make               String
+  model              String
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  driverId           String?             @unique
+  latitude           Float?
+  longitude          Float?
+  status             String              @default("AVAILABLE")
+  capacityKg         Float?
+  capacityM3         Float?
+  fuelType           String              @default("DIESEL")
+  hasColdChain       Boolean             @default(false)
+  insuranceExpiresAt DateTime?
+  nextServiceDate    DateTime?
+  odometerKm         Int?
+  type               String              @default("VAN_SMALL")
+  year               Int?
+  fuelEntries        FuelEntry[]
+  maintenanceRecords MaintenanceRecord[]
+  orders             Order[]
+  telematicsEvents   TelematicsEvent[]
+  driver             Driver?             @relation(fields: [driverId], references: [id])
 }
 
-enum StaffRole {
-  ADMIN
-  OPS_MANAGER
-  DISPATCHER
-  WAREHOUSE_MANAGER
-  CUSTOMER_SUPPORT
-  FINANCE
-  READONLY
+model Driver {
+  id               String        @id @default(cuid())
+  email            String        @unique
+  phone            String?
+  createdAt        DateTime      @default(now())
+  name             String
+  updatedAt        DateTime      @updatedAt
+  status           String        @default("ACTIVE")
+  licenseExpiresAt DateTime?
+  licenseNumber    String?
+  rating           Float?
+  totalDeliveries  Int           @default(0)
+  shifts           DriverShift[]
+  orders           Order[]
+  vehicle          Vehicle?
 }
 
-// ============================================================
-//  SHIPPERS (the carrier's customers — the businesses sending parcels)
-// ============================================================
+model DriverShift {
+  id        String    @id @default(cuid())
+  driverId  String
+  startedAt DateTime  @default(now())
+  endedAt   DateTime?
+  startKm   Int?
+  endKm     Int?
+  notes     String?
+  driver    Driver    @relation(fields: [driverId], references: [id])
 
-model Shipper {
-  id              String   @id @default(cuid())
-  carrierId       String
-  legalName       String
-  tradingName     String?
-  email           String
-  phone           String?
-  address         Json
-  contactName     String?
-  apiKeyHash      String?  @unique
-  webhookUrl      String?
-  webhookSecret   String?
-  contractedRate  Json?    // tariff structure
-  isActive        Boolean  @default(true)
-
-  carrier         Carrier  @relation(fields: [carrierId], references: [id])
-  orders          Order[]
-  invoices        Invoice[]
-
-  createdAt       DateTime @default(now())
+  @@index([driverId])
 }
 
-// ============================================================
-//  HUBS, WAREHOUSES, INVENTORY NODES
-// ============================================================
-
-model Hub {
-  id              String   @id @default(cuid())
-  carrierId       String
-  code            String
-  name            String
-  type            HubType
-  address         Json
-  // PostGIS point — manually managed via raw SQL since Prisma lacks native geography support
-  // Use: ALTER TABLE "Hub" ADD COLUMN location geography(Point, 4326);
-  // CREATE INDEX hub_location_gix ON "Hub" USING GIST (location);
-  latitude        Float
-  longitude       Float
-  serviceArea     Json?    // GeoJSON polygon
-  openHours       Json?    // {mon: {open: "08:00", close: "17:00"}, ...}
-  capacity        Json?    // { vehicles, parcels, m3 }
-  isActive        Boolean  @default(true)
-
-  carrier         Carrier  @relation(fields: [carrierId], references: [id])
-  vehicles        Vehicle[]
-  warehouses      Warehouse[]
-  shipmentsOrigin Shipment[] @relation("ShipmentOriginHub")
-  shipmentsDest   Shipment[] @relation("ShipmentDestHub")
-  routes          Route[]
-
-  createdAt       DateTime @default(now())
-
-  @@unique([carrierId, code])
-  @@index([carrierId])
+model Order {
+  id              String    @id @default(cuid())
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  customerEmail   String
+  customerName    String
+  customerPhone   String
+  deliveryAddress String
+  driverId        String?
+  driverName      String?
+  orderNumber     String    @unique
+  pickupAddress   String
+  priority        String    @default("NORMAL")
+  scheduledDate   DateTime?
+  vehicleId       String?
+  status          String    @default("PENDING")
+  completedAt     DateTime?
+  podNote         String?
+  podPhotoUrl     String?
+  driver          Driver?   @relation(fields: [driverId], references: [id])
+  vehicle         Vehicle?  @relation(fields: [vehicleId], references: [id])
 }
-
-enum HubType { DEPOT CROSS_DOCK SORTATION FULFILLMENT_CENTER MICRO_FULFILLMENT LOCKER }
 
 model Warehouse {
-  id              String   @id @default(cuid())
-  carrierId       String
-  hubId           String?
-  code            String
-  name            String
-  address         Json
-  latitude        Float
-  longitude       Float
-  totalArea       Float?   // m²
-  totalVolume     Float?   // m³
-  hasColdChain    Boolean  @default(false)
-  hasHazmat       Boolean  @default(false)
-  isActive        Boolean  @default(true)
-
-  carrier         Carrier  @relation(fields: [carrierId], references: [id])
-  hub             Hub?     @relation(fields: [hubId], references: [id])
-  zones           WarehouseZone[]
-  inventoryNodes  InventoryNode[]
-  stocktakes      Stocktake[]
-
-  @@unique([carrierId, code])
+  id           String          @id @default(cuid())
+  name         String
+  address      String
+  capacity     Int
+  createdAt    DateTime        @default(now())
+  currentStock Int             @default(0)
+  location     String
+  manager      String?
+  phone        String?
+  updatedAt    DateTime        @updatedAt
+  latitude     Float?
+  longitude    Float?
+  items        InventoryItem[]
+  zones        WarehouseZone[]
 }
 
 model WarehouseZone {
-  id              String   @id @default(cuid())
-  warehouseId     String
-  code            String
-  name            String
-  type            String   // RECEIVING | STORAGE | PICKING | PACKING | SHIPPING | RETURNS
-  isActive        Boolean  @default(true)
-
-  warehouse       Warehouse @relation(fields: [warehouseId], references: [id])
-  bins            WarehouseBin[]
+  id          String    @id @default(cuid())
+  warehouseId String
+  code        String
+  name        String
+  type        String
+  warehouse   Warehouse @relation(fields: [warehouseId], references: [id])
 
   @@unique([warehouseId, code])
 }
 
-model WarehouseBin {
-  id              String   @id @default(cuid())
-  zoneId          String
-  code            String   // e.g., A-12-3-2 (aisle, bay, shelf, position)
-  type            String   // PALLET | SHELF | FLOOR | BULK
-  capacity        Json?    // { weightKg, volumeM3 }
-  isActive        Boolean  @default(true)
-
-  zone            WarehouseZone @relation(fields: [zoneId], references: [id])
-  inventoryHoldings InventoryHolding[]
-
-  @@unique([zoneId, code])
-}
-
-model InventoryNode {
-  id              String   @id @default(cuid())
-  carrierId       String
-  warehouseId     String?
-  shipperId       String   // each shipper's stock is tracked separately
-  type            String   // OWNED | CONSIGNMENT | DROPSHIP
-  isActive        Boolean  @default(true)
-
-  carrier         Carrier  @relation(fields: [carrierId], references: [id])
-  warehouse       Warehouse? @relation(fields: [warehouseId], references: [id])
-  holdings        InventoryHolding[]
-
-  @@index([carrierId])
-}
-
 model InventoryItem {
-  id              String   @id @default(cuid())
-  shipperId       String
-  sku             String
-  title           String
-  description     String?
-  weight          Float?   // kg
-  length          Float?   // cm
-  width           Float?
-  height          Float?
-  dangerousGoodsClass String?  // UN class
-  requiresColdChain Boolean @default(false)
-  shelfLifeDays   Int?
-  unitCost        Decimal? @db.Decimal(12, 2)
-
-  holdings        InventoryHolding[]
-  orderItems      OrderItem[]
-
-  @@unique([shipperId, sku])
-  @@index([sku])
-}
-
-model InventoryHolding {
-  id              String   @id @default(cuid())
-  nodeId          String
-  itemId          String
-  binId           String?
-  quantityOnHand  Int      @default(0)
-  quantityCommitted Int    @default(0)
-  quantityAvailable Int    @default(0)  // computed: onHand - committed
-  lastCountedAt   DateTime?
-
-  node            InventoryNode @relation(fields: [nodeId], references: [id])
-  item            InventoryItem @relation(fields: [itemId], references: [id])
-  bin             WarehouseBin? @relation(fields: [binId], references: [id])
-  movements       InventoryMovement[]
-
-  @@unique([nodeId, itemId, binId])
+  id          String              @id @default(cuid())
+  sku         String              @unique
+  category    String
+  createdAt   DateTime            @default(now())
+  maxStock    Int                 @default(1000)
+  minStock    Int                 @default(0)
+  name        String
+  quantity    Int
+  unitPrice   Float
+  updatedAt   DateTime            @updatedAt
+  warehouseId String
+  unitCost    Float?
+  weight      Float?
+  warehouse   Warehouse           @relation(fields: [warehouseId], references: [id])
+  movements   InventoryMovement[]
 }
 
 model InventoryMovement {
-  id              String   @id @default(cuid())
-  holdingId       String
-  type            String   // RECEIVE | PICK | PACK | SHIP | RETURN | TRANSFER | ADJUSTMENT
-  quantity        Int
-  reference       String?  // shipment id, transfer id, adjustment reason
-  performedBy     String?  // user id
-  notes           String?
-
-  holding         InventoryHolding @relation(fields: [holdingId], references: [id])
-
-  createdAt       DateTime @default(now())
-
-  @@index([holdingId, createdAt])
-}
-
-model Stocktake {
-  id              String   @id @default(cuid())
-  warehouseId     String
-  status          String   @default("OPEN")  // OPEN | IN_PROGRESS | RECONCILED | CLOSED
-  performedById   String?
-  notes           String?
-
-  warehouse       Warehouse @relation(fields: [warehouseId], references: [id])
-  counts          StocktakeCount[]
-
-  startedAt       DateTime @default(now())
-  completedAt     DateTime?
-}
-
-model StocktakeCount {
-  id              String   @id @default(cuid())
-  stocktakeId     String
-  binId           String
-  itemId          String
-  expected        Int
-  counted         Int
-  variance        Int      // counted - expected
-  notes           String?
-
-  stocktake       Stocktake @relation(fields: [stocktakeId], references: [id])
-
-  createdAt       DateTime @default(now())
-}
-
-// ============================================================
-//  VEHICLES & DRIVERS
-// ============================================================
-
-model Vehicle {
-  id              String   @id @default(cuid())
-  carrierId       String
-  hubId           String?
-  registration    String   // license plate
-  vin             String?
-  make            String
-  model           String
-  year            Int?
-  type            VehicleType
-  fuelType        String   // PETROL | DIESEL | ELECTRIC | HYBRID
-  capacityKg      Float?
-  capacityM3      Float?
-  capacityParcels Int?
-  hasColdChain    Boolean  @default(false)
-  hasTailLift     Boolean  @default(false)
-  status          VehicleStatus @default(AVAILABLE)
-  odometerKm      Int?
-  nextServiceKm   Int?
-  nextServiceDate DateTime?
-  insuranceExpiresAt DateTime?
-  licenseExpiresAt DateTime?
-  telematicsDeviceId String? @unique
-
-  carrier         Carrier  @relation(fields: [carrierId], references: [id])
-  hub             Hub?     @relation(fields: [hubId], references: [id])
-  routes          Route[]
-  maintenanceRecords MaintenanceRecord[]
-  telematicsEvents TelematicsEvent[]
-  fuelEntries     FuelEntry[]
-
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  @@unique([carrierId, registration])
-}
-
-enum VehicleType {
-  BIKE
-  SCOOTER
-  CAR
-  VAN_SMALL
-  VAN_LARGE
-  TRUCK_LIGHT
-  TRUCK_HEAVY
-  REFRIGERATED
-  TRAILER
-  RIGID_8T
-  RIGID_16T
-}
-
-enum VehicleStatus {
-  AVAILABLE
-  ON_ROUTE
-  AT_HUB
-  SERVICING
-  OUT_OF_SERVICE
-  RETIRED
-}
-
-model Driver {
-  id              String   @id @default(cuid())
-  carrierId       String
-  hubId           String?
-  fullName        String
-  email           String?
-  phone           String
-  idNumber        String   // encrypted
-  licenseNumber   String
-  licenseExpiresAt DateTime
-  licenseClasses  String[]  // ["EB", "EC1"]
-  status          DriverStatus @default(OFF_DUTY)
-  isActive        Boolean  @default(true)
-  rating          Float?
-  totalDeliveries Int      @default(0)
-  pdpExpiresAt    DateTime?  // Professional Driving Permit (SA)
-
-  carrier         Carrier  @relation(fields: [carrierId], references: [id])
-  hub             Hub?     @relation(fields: [hubId], references: [id])
-  routes          Route[]
-  shifts          DriverShift[]
-
-  createdAt       DateTime @default(now())
-}
-
-enum DriverStatus { OFF_DUTY ON_DUTY ON_ROUTE ON_BREAK UNAVAILABLE }
-
-model DriverShift {
-  id              String   @id @default(cuid())
-  driverId        String
-  vehicleId       String?
-  startedAt       DateTime
-  endedAt         DateTime?
-  startKm         Int?
-  endKm           Int?
-  notes           String?
-
-  driver          Driver   @relation(fields: [driverId], references: [id])
-
-  @@index([driverId, startedAt])
-}
-
-// ============================================================
-//  ORDERS & SHIPMENTS
-// ============================================================
-
-model Order {
-  id              String   @id @default(cuid())
-  shipperId       String
-  externalRef     String?  // shipper's order number
-  status          OrderStatus @default(RECEIVED)
-  serviceLevel    String   // STANDARD | EXPRESS | SAME_DAY | ECONOMY
-  origin          Json     // address with lat/lng
-  destination     Json
-  recipientName   String
-  recipientEmail  String?
-  recipientPhone  String
-  declaredValue   Decimal? @db.Decimal(12, 2)
-  paymentTerms    String   @default("PREPAID")  // PREPAID | COD | INVOICED
-  codAmount       Decimal? @db.Decimal(12, 2)
-  specialInstructions String? @db.Text
-
-  shipper         Shipper  @relation(fields: [shipperId], references: [id])
-  items           OrderItem[]
-  shipments       Shipment[]
-
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  @@index([shipperId, status])
-}
-
-enum OrderStatus {
-  RECEIVED
-  ALLOCATED
-  PICKING
-  PACKED
-  READY_FOR_DISPATCH
-  DISPATCHED
-  IN_TRANSIT
-  OUT_FOR_DELIVERY
-  DELIVERED
-  RETURNED
-  CANCELLED
-}
-
-model OrderItem {
-  id              String   @id @default(cuid())
-  orderId         String
-  itemId          String
-  quantity        Int
-  unitWeight      Float?
-  unitCost        Decimal? @db.Decimal(12, 2)
-
-  order           Order    @relation(fields: [orderId], references: [id])
-  item            InventoryItem @relation(fields: [itemId], references: [id])
-}
-
-model Shipment {
-  id              String   @id @default(cuid())
-  carrierId       String
-  orderId         String
-  trackingNumber  String   @unique
-  originHubId     String?
-  destinationHubId String?
-  serviceLevel    String
-  weightKg        Float
-  volumeM3        Float?
-  parcelCount     Int      @default(1)
-  declaredValue   Decimal? @db.Decimal(12, 2)
-  status          ShipmentStatus @default(CREATED)
-  promisedBy      DateTime?
-  estimatedDeliveryAt DateTime?
-  actualDeliveryAt DateTime?
-  recipientSignatureUrl String?
-  podPhotoUrl     String?
-  podNotes        String?
-  failureReason   String?
-  attemptCount    Int      @default(0)
-  externalCarrier String?  // when handed to 3PL: "ARAMEX" | "BOB_GO_SUPPLIER_X"
-  externalTracking String?
-
-  carrier         Carrier  @relation(fields: [carrierId], references: [id])
-  order           Order    @relation(fields: [orderId], references: [id])
-  originHub       Hub?     @relation("ShipmentOriginHub", fields: [originHubId], references: [id])
-  destinationHub  Hub?     @relation("ShipmentDestHub", fields: [destinationHubId], references: [id])
-  parcels         Parcel[]
-  events          ShipmentEvent[]
-  stops           Stop[]
-
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  @@index([carrierId, status])
-  @@index([trackingNumber])
-}
-
-enum ShipmentStatus {
-  CREATED
-  AT_ORIGIN
-  IN_TRANSIT
-  AT_HUB
-  OUT_FOR_DELIVERY
-  DELIVERED
-  FAILED_DELIVERY
-  RETURNING
-  RETURNED_TO_SENDER
-  CANCELLED
-  LOST
-}
-
-model Parcel {
-  id              String   @id @default(cuid())
-  shipmentId      String
-  barcode         String   @unique
-  weightKg        Float?
-  dimensions      Json?
-  contents        String?
-
-  shipment        Shipment @relation(fields: [shipmentId], references: [id])
-  scans           ParcelScan[]
-
-  @@index([shipmentId])
-}
-
-model ParcelScan {
-  id              String   @id @default(cuid())
-  parcelId        String
-  scanType        String   // RECEIVED | SORTED | LOADED | UNLOADED | DELIVERED
-  hubId           String?
-  vehicleId       String?
-  scannedById     String?  // user id (driver / warehouse staff)
-  latitude        Float?
-  longitude       Float?
-  timestamp       DateTime @default(now())
-
-  parcel          Parcel   @relation(fields: [parcelId], references: [id])
-
-  @@index([parcelId, timestamp])
-}
-
-model ShipmentEvent {
-  id              String   @id @default(cuid())
-  shipmentId      String
-  type            String
-  description     String
-  actor           String   // user id, "DRIVER", "SYSTEM", "WEBHOOK"
-  payload         Json?
-  isCustomerVisible Boolean @default(true)
-
-  shipment        Shipment @relation(fields: [shipmentId], references: [id])
-
-  createdAt       DateTime @default(now())
-
-  @@index([shipmentId, createdAt])
-}
-
-// ============================================================
-//  ROUTES & STOPS (the heart of dispatch)
-// ============================================================
-
-model Route {
-  id              String   @id @default(cuid())
-  carrierId       String
-  hubId           String
-  vehicleId       String?
-  driverId        String?
-  date            DateTime @db.Date
-  status          RouteStatus @default(PLANNED)
-  plannedStartAt  DateTime?
-  plannedEndAt    DateTime?
-  actualStartAt   DateTime?
-  actualEndAt     DateTime?
-  totalDistanceKm Float?
-  totalDurationMin Int?
-  optimizationRunId String?
-  routePolyline   String?  @db.Text  // encoded polyline
-  // PostGIS LineString stored separately via raw SQL
-
-  carrier         Carrier  @relation(fields: [carrierId], references: [id])
-  hub             Hub      @relation(fields: [hubId], references: [id])
-  vehicle         Vehicle? @relation(fields: [vehicleId], references: [id])
-  driver          Driver?  @relation(fields: [driverId], references: [id])
-  stops           Stop[]
-  optimizationRun OptimizationRun? @relation(fields: [optimizationRunId], references: [id])
-
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  @@index([carrierId, date])
-  @@index([driverId, date])
-}
-
-enum RouteStatus { PLANNED OPTIMIZED ASSIGNED IN_PROGRESS COMPLETED CANCELLED }
-
-model Stop {
-  id              String   @id @default(cuid())
-  routeId         String
-  shipmentId      String?
-  sequence        Int
-  type            StopType
-  address         Json
-  latitude        Float
-  longitude       Float
-  contactName     String?
-  contactPhone    String?
-  serviceTimeMin  Int      @default(5)  // expected dwell time
-  timeWindowStart DateTime?
-  timeWindowEnd   DateTime?
-  plannedArrivalAt DateTime?
-  actualArrivalAt DateTime?
-  plannedDepartAt DateTime?
-  actualDepartAt  DateTime?
-  status          StopStatus @default(PENDING)
-  failureReason   String?
-  podPhotoUrl     String?
-  signatureUrl    String?
-  notes           String?  @db.Text
-
-  route           Route    @relation(fields: [routeId], references: [id])
-  shipment        Shipment? @relation(fields: [shipmentId], references: [id])
-
-  @@unique([routeId, sequence])
-  @@index([routeId])
-}
-
-enum StopType { PICKUP DELIVERY HUB_DEPART HUB_ARRIVE BREAK FUEL }
-enum StopStatus { PENDING EN_ROUTE ARRIVED COMPLETED FAILED SKIPPED }
-
-model OptimizationRun {
-  id              String   @id @default(cuid())
-  carrierId       String
-  hubId           String
-  date            DateTime @db.Date
-  inputPayload    Json     // shipments + vehicles + constraints
-  outputPayload   Json?    // assignments + sequences
-  solver          String   // 'or-tools' | 'custom'
-  solverVersion   String?
-  status          String   @default("RUNNING")
-  durationMs      Int?
-  shipmentsRouted Int?
-  shipmentsUnrouted Int?
-  totalDistanceKm Float?
-  totalDurationMin Int?
-  error           String?  @db.Text
-
-  routes          Route[]
-
-  startedAt       DateTime @default(now())
-  endedAt         DateTime?
-}
-
-// ============================================================
-//  TELEMATICS & MAINTENANCE
-// ============================================================
-
-// Note: heavy event volume — store in TimescaleDB hypertable
-// SELECT create_hypertable('"TelematicsEvent"', 'timestamp');
-model TelematicsEvent {
-  id              String   @id @default(cuid())
-  vehicleId       String
-  timestamp       DateTime
-  latitude        Float
-  longitude       Float
-  speedKmh        Float?
-  heading         Float?
-  ignition        Boolean?
-  fuelLevelPct    Float?
-  odometerKm      Float?
-  engineRpm       Int?
-  rawData         Json?
-
-  vehicle         Vehicle  @relation(fields: [vehicleId], references: [id])
-
-  @@index([vehicleId, timestamp])
-}
-
-model TelematicsAlert {
-  id              String   @id @default(cuid())
-  vehicleId       String
-  type            String   // HARSH_BRAKING | SPEEDING | IDLING | UNAUTHORIZED_USE | CRASH | LOW_FUEL
-  severity        String
-  payload         Json
-  acknowledgedAt  DateTime?
-  acknowledgedById String?
-
-  createdAt       DateTime @default(now())
-
-  @@index([vehicleId, type])
+  id        String        @id @default(cuid())
+  itemId    String
+  type      String
+  quantity  Int
+  reference String?
+  notes     String?
+  createdAt DateTime      @default(now())
+  item      InventoryItem @relation(fields: [itemId], references: [id])
+
+  @@index([itemId])
 }
 
 model MaintenanceRecord {
-  id              String   @id @default(cuid())
+  id              String    @id @default(cuid())
   vehicleId       String
-  type            String   // SERVICE | REPAIR | TYRES | MOT | PRE_TRIP_INSPECTION
+  type            String
   description     String
-  cost            Decimal? @db.Decimal(12, 2)
+  cost            Float?
   odometerKm      Int?
   performedAt     DateTime
-  performedBy     String?  // workshop name
-  invoiceUrl      String?
+  performedBy     String?
   nextServiceKm   Int?
   nextServiceDate DateTime?
-
-  vehicle         Vehicle  @relation(fields: [vehicleId], references: [id])
-
-  createdAt       DateTime @default(now())
-}
-
-model MaintenancePrediction {
-  id              String   @id @default(cuid())
-  vehicleId       String
-  component       String   // BRAKES | TYRES | BATTERY | ENGINE | TRANSMISSION
-  riskScore       Float    // 0–1
-  predictedFailDate DateTime?
-  recommendedAction String
-  rationale       String?  @db.Text
-  modelVersion    String
-
-  createdAt       DateTime @default(now())
+  status          String    @default("SCHEDULED")
+  priority        String    @default("NORMAL")
+  createdAt       DateTime  @default(now())
+  vehicle         Vehicle   @relation(fields: [vehicleId], references: [id])
 
   @@index([vehicleId])
 }
 
 model FuelEntry {
-  id              String   @id @default(cuid())
-  vehicleId       String
-  date            DateTime
-  litres          Float
-  cost            Decimal  @db.Decimal(12, 2)
-  odometerKm      Int?
-  cardLast4       String?
-  receiptUrl      String?
+  id           String   @id @default(cuid())
+  vehicleId    String
+  driverId     String?
+  date         DateTime @default(now())
+  litres       Float
+  costPerLitre Float?
+  totalCost    Float
+  station      String?
+  odometerKm   Int?
+  createdAt    DateTime @default(now())
+  vehicle      Vehicle  @relation(fields: [vehicleId], references: [id])
 
-  vehicle         Vehicle  @relation(fields: [vehicleId], references: [id])
-
-  @@index([vehicleId, date])
+  @@index([vehicleId])
 }
 
-// ============================================================
-//  COURIER FEDERATION
-// ============================================================
+model TelematicsEvent {
+  id           String   @id @default(cuid())
+  vehicleId    String
+  timestamp    DateTime @default(now())
+  latitude     Float
+  longitude    Float
+  speedKmh     Float?
+  heading      Float?
+  ignition     Boolean?
+  fuelLevelPct Float?
+  odometerKm   Float?
+  vehicle      Vehicle  @relation(fields: [vehicleId], references: [id])
 
-model CourierAccount {
-  id              String   @id @default(cuid())
-  carrierId       String
-  provider        String   // BOB_GO | ARAMEX | DSV | IMPERIAL | COURIER_GUY | PUDO | POSTNET
-  name            String   // friendly label
-  config          Json     // credentials (encrypted)
-  isActive        Boolean  @default(true)
-  serviceLevels   String[]  // ["NEXT_DAY", "ECONOMY"]
-
-  carrier         Carrier  @relation(fields: [carrierId], references: [id])
-  bookings        CourierBooking[]
-}
-
-model CourierBooking {
-  id              String   @id @default(cuid())
-  courierAccountId String
-  shipmentId      String
-  externalConsignmentNo String
-  trackingUrl     String?
-  cost            Decimal? @db.Decimal(12, 2)
-  status          String   @default("BOOKED")
-  rawResponse     Json?
-
-  courierAccount  CourierAccount @relation(fields: [courierAccountId], references: [id])
-
-  createdAt       DateTime @default(now())
-}
-
-// ============================================================
-//  BILLING
-// ============================================================
-
-model Invoice {
-  id              String   @id @default(cuid())
-  carrierId       String
-  shipperId       String
-  invoiceNumber   String
-  periodStart     DateTime
-  periodEnd       DateTime
-  subtotal        Decimal  @db.Decimal(12, 2)
-  taxTotal        Decimal  @db.Decimal(12, 2)
-  total           Decimal  @db.Decimal(12, 2)
-  status          String   @default("DRAFT")
-  pdfUrl          String?
-
-  carrier         Carrier  @relation(fields: [carrierId], references: [id])
-  shipper         Shipper  @relation(fields: [shipperId], references: [id])
-  lines           InvoiceLine[]
-
-  createdAt       DateTime @default(now())
-
-  @@unique([carrierId, invoiceNumber])
-}
-
-model InvoiceLine {
-  id              String   @id @default(cuid())
-  invoiceId       String
-  shipmentId      String?
-  description     String
-  quantity        Int
-  unitPrice       Decimal  @db.Decimal(12, 2)
-  amount          Decimal  @db.Decimal(12, 2)
-
-  invoice         Invoice  @relation(fields: [invoiceId], references: [id])
-}
-
-// ============================================================
-//  AGENT RUNS, DEMAND FORECASTING, AUDIT
-// ============================================================
-
-model AgentRun {
-  id              String   @id @default(cuid())
-  carrierId       String
-  agentName       String
-  inputPayload    Json
-  status          String   @default("RUNNING")
-  steps           Json[]
-  outputPayload   Json?
-  langfuseTraceId String?
-
-  startedAt       DateTime @default(now())
-  endedAt         DateTime?
-
-  @@index([carrierId, agentName])
-}
-
-model DemandForecast {
-  id              String   @id @default(cuid())
-  carrierId       String
-  hubId           String?
-  forecastDate    DateTime
-  horizonDays     Int
-  granularity     String   // 'hour' | 'day' | 'week'
-  predictedVolume Json     // [{ timestamp, expected, p10, p90 }]
-  modelVersion    String
-
-  createdAt       DateTime @default(now())
-
-  @@index([carrierId, hubId, forecastDate])
+  @@index([vehicleId, timestamp])
 }
 
 model AuditLog {
-  id              String   @id @default(cuid())
-  carrierId       String
-  actor           String
-  actorType       String
-  action          String
-  resource        String
-  resourceId      String
-  before          Json?
-  after           Json?
-  ip              String?
-
-  createdAt       DateTime @default(now())
+  id         String   @id @default(cuid())
+  actor      String
+  actorType  String   @default("user")
+  action     String
+  resource   String
+  resourceId String
+  before     Json?
+  after      Json?
+  ip         String?
+  createdAt  DateTime @default(now())
 
   @@index([resource, resourceId])
+}
+
+model Shipper {
+  id          String   @id
+  legalName   String
+  email       String   @unique
+  phone       String?
+  address     String?
+  contactName String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
 }

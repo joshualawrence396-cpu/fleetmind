@@ -1,63 +1,23 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
-
+import { NextResponse } from "next/server"
+import { PrismaClient } from "@prisma/client"
 const prisma = new PrismaClient()
 
-// GET /api/fuel - Get all fuel logs
 export async function GET() {
   try {
-    const fuelLogs = await prisma.fuelLog.findMany({
-      include: {
-        vehicle: {
-          select: { registration: true, make: true, model: true }
-        },
-        driver: {
-          select: { name: true, email: true }
-        }
-      },
-      orderBy: { createdAt: 'desc' }
-    })
-
-    return NextResponse.json(fuelLogs)
-  } catch (error) {
-    console.error('Fuel logs fetch error:', error)
-    return NextResponse.json({ error: 'Failed to fetch fuel logs' }, { status: 500 })
-  }
+    const entries = await prisma.fuelEntry.findMany({ include: { vehicle: true }, orderBy: { createdAt: "desc" } })
+    return NextResponse.json(entries)
+  } catch { return NextResponse.json([]) }
 }
 
-// POST /api/fuel - Create new fuel log
-export async function POST(request: NextRequest) {
+export async function POST(request) {
   try {
     const body = await request.json()
-    const { vehicleId, liters, cost, odometer, fuelType, station, driverId } = body
-
-    if (!vehicleId || !liters || !cost) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
-    }
-
-    const fuelLog = await prisma.fuelLog.create({
-      data: {
-        vehicleId,
-        liters: parseFloat(liters),
-        cost: parseFloat(cost),
-        odometer: odometer ? parseInt(odometer) : null,
-        fuelType: fuelType || 'DIESEL',
-        station,
-        driverId
-      },
-      include: {
-        vehicle: {
-          select: { registration: true, make: true, model: true }
-        },
-        driver: {
-          select: { name: true }
-        }
-      }
+    const entry = await prisma.fuelEntry.create({
+      data: { vehicleId: body.vehicleId, driverId: body.driverId || null, litres: parseFloat(body.litres), costPerLitre: body.costPerLitre ? parseFloat(body.costPerLitre) : null, totalCost: parseFloat(body.litres) * parseFloat(body.costPerLitre || 0), station: body.station || null, odometerKm: body.odometerKm ? parseInt(body.odometerKm) : null, date: body.date ? new Date(body.date) : new Date() },
+      include: { vehicle: true }
     })
-
-    return NextResponse.json(fuelLog, { status: 201 })
+    return NextResponse.json(entry)
   } catch (error) {
-    console.error('Fuel log creation error:', error)
-    return NextResponse.json({ error: 'Failed to create fuel log' }, { status: 500 })
+    return NextResponse.json({ error: error.message }, { status: 500 })
   }
 }

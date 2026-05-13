@@ -1,4 +1,4 @@
-﻿import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 
 // In-memory store (use database in production)
 const subscriptions = new Map()
@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
     }
     
     subscriptions.set(driverId, subscription)
-    console.log(Driver  subscribed to push notifications)
+    console.log("Driver subscribed to push notifications")
     
     return NextResponse.json({ success: true, message: 'Subscribed successfully' })
   } catch (error) {
@@ -33,3 +33,4 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ error: 'Failed to unsubscribe' }, { status: 500 })
   }
 }
+

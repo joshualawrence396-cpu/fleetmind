@@ -1,16 +1,15 @@
-﻿import { NextResponse } from "next/server"
+import { NextResponse } from "next/server"
 import { PrismaClient } from "@prisma/client"
 const prisma = new PrismaClient()
 
 export async function GET() {
   try {
     const vehicles = await prisma.vehicle.findMany({
-      include: { driver: true }
+      include: { driver: true, maintenanceRecords: { take: 1, orderBy: { createdAt: "desc" } }, fuelEntries: { take: 1, orderBy: { createdAt: "desc" } } },
+      orderBy: { createdAt: "desc" }
     })
     return NextResponse.json(vehicles)
-  } catch {
-    return NextResponse.json([])
-  }
+  } catch { return NextResponse.json([]) }
 }
 
 export async function POST(request) {
@@ -21,9 +20,14 @@ export async function POST(request) {
         registration: body.registration,
         make: body.make,
         model: body.model,
+        year: body.year ? parseInt(body.year) : null,
+        type: body.type || "VAN_SMALL",
+        fuelType: body.fuelType || "DIESEL",
         status: body.status || "AVAILABLE",
         latitude: body.latitude ? parseFloat(body.latitude) : -33.9249,
         longitude: body.longitude ? parseFloat(body.longitude) : 18.4241,
+        capacityKg: body.capacityKg ? parseFloat(body.capacityKg) : null,
+        odometerKm: body.odometerKm ? parseInt(body.odometerKm) : null,
       },
       include: { driver: true }
     })

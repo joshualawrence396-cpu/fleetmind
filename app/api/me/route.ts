@@ -1,17 +1,34 @@
-﻿import { NextResponse } from 'next/server'
+﻿import { NextResponse } from 'next/server';
+import { PrismaClient } from '@prisma/client';
 
-export async function GET(request) {
+const prisma = new PrismaClient();
+
+export async function GET(request: Request) {
   try {
-    const authCookie = request.cookies.get('auth')?.value
+    // Get userId from cookie
+    const cookieHeader = request.headers.get('cookie');
+    const userId = cookieHeader?.match(/userId=([^;]+)/)?.[1];
     
-    if (!authCookie) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+    if (!userId) {
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
     
-    const user = JSON.parse(authCookie)
-    return NextResponse.json(user)
+    const user = await prisma.user.findUnique({
+      where: { id: userId }
+    });
+    
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 401 });
+    }
+    
+    return NextResponse.json({
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role
+    });
     
   } catch (error) {
-    return NextResponse.json({ error: 'Invalid session' }, { status: 401 })
+    return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
 }

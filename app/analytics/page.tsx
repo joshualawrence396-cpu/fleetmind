@@ -1,7 +1,7 @@
 ﻿'use client'
 
 import { useState, useEffect } from 'react'
-import UnifiedNavigation from '@/components/UnifiedNavigation'
+import PageShell from '@/components/PageShell'
 
 export default function AnalyticsPage() {
   const [metrics, setMetrics] = useState({
@@ -24,35 +24,46 @@ export default function AnalyticsPage() {
   }, [])
 
   return (
-    <div>
-      <UnifiedNavigation />
-      <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
-        <h1 style={{ fontSize: '28px', fontWeight: 'bold', marginBottom: '24px' }}>Analytics Dashboard</h1>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px', marginBottom: '32px' }}>
-          <div style={{ background: 'white', borderRadius: '12px', padding: '20px', textAlign: 'center' }}>
-            <div style={{ fontSize: '32px', fontWeight: 'bold', color: '#3b82f6' }}>{metrics.totalOrders}</div>
-            <div style={{ color: '#6b7280' }}>Total Orders</div>
-          </div>
-          <div style={{ background: 'white', borderRadius: '12px', padding: '20px', textAlign: 'center' }}>
-            <div style={{ fontSize: '32px', fontWeight: 'bold', color: '#10b981' }}>{metrics.deliveryRate}%</div>
-            <div style={{ color: '#6b7280' }}>Delivery Rate</div>
-          </div>
-          <div style={{ background: 'white', borderRadius: '12px', padding: '20px', textAlign: 'center' }}>
-            <div style={{ fontSize: '32px', fontWeight: 'bold', color: '#8b5cf6' }}>{metrics.activeDrivers}</div>
-            <div style={{ color: '#6b7280' }}>Active Drivers</div>
-          </div>
-          <div style={{ background: 'white', borderRadius: '12px', padding: '20px', textAlign: 'center' }}>
-            <div style={{ fontSize: '32px', fontWeight: 'bold', color: '#f59e0b' }}>{metrics.totalVehicles}</div>
-            <div style={{ color: '#6b7280' }}>Fleet Size</div>
-          </div>
+    <PageShell
+      title="Analytics Dashboard"
+      subtitle="Fleet performance metrics, order delivery rates, and system health in one unified view."
+    >
+      <div className="grid gap-6 xl:grid-cols-4">
+        <div className="bg-white rounded-3xl border border-slate-200 p-6 text-center shadow-sm">
+          <div className="text-4xl font-semibold text-sky-600">{metrics.totalOrders}</div>
+          <p className="mt-3 text-sm text-slate-500">Total Orders</p>
         </div>
-        <div style={{ background: 'white', borderRadius: '12px', padding: '20px' }}>
-          <h2 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '16px' }}>System Health</h2>
-          <div><span style={{ color: '#10b981' }}>●</span> API Server: Operational</div>
-          <div><span style={{ color: '#10b981' }}>●</span> Database: Connected</div>
-          <div><span style={{ color: '#10b981' }}>●</span> Warehouses: {metrics.warehouses}</div>
+        <div className="bg-white rounded-3xl border border-slate-200 p-6 text-center shadow-sm">
+          <div className="text-4xl font-semibold text-emerald-600">{metrics.deliveryRate}%</div>
+          <p className="mt-3 text-sm text-slate-500">Delivery Rate</p>
+        </div>
+        <div className="bg-white rounded-3xl border border-slate-200 p-6 text-center shadow-sm">
+          <div className="text-4xl font-semibold text-violet-600">{metrics.activeDrivers}</div>
+          <p className="mt-3 text-sm text-slate-500">Active Drivers</p>
+        </div>
+        <div className="bg-white rounded-3xl border border-slate-200 p-6 text-center shadow-sm">
+          <div className="text-4xl font-semibold text-amber-600">{metrics.totalVehicles}</div>
+          <p className="mt-3 text-sm text-slate-500">Fleet Size</p>
         </div>
       </div>
-    </div>
+
+      <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm">
+        <h2 className="text-xl font-semibold text-slate-900 mb-4">System Health</h2>
+        <div className="grid gap-4 md:grid-cols-3">
+          <div className="rounded-2xl bg-slate-50 p-4">
+            <p className="text-sm text-slate-500">API Server</p>
+            <p className="mt-2 font-semibold text-slate-900">Operational</p>
+          </div>
+          <div className="rounded-2xl bg-slate-50 p-4">
+            <p className="text-sm text-slate-500">Database</p>
+            <p className="mt-2 font-semibold text-slate-900">Connected</p>
+          </div>
+          <div className="rounded-2xl bg-slate-50 p-4">
+            <p className="text-sm text-slate-500">Warehouses</p>
+            <p className="mt-2 font-semibold text-slate-900">{metrics.warehouses}</p>
+          </div>
+        </div>
+      </div>
+    </PageShell>
   )
 }

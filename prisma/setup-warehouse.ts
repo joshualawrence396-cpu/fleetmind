@@ -1,4 +1,4 @@
-﻿import { PrismaClient } from '@prisma/client'
+import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
@@ -6,7 +6,7 @@ async function main() {
   try {
     const carrier = await prisma.carrier.findFirst()
     if (!carrier) {
-      console.error('❌ No carrier found. Please run: npx prisma db seed')
+      console.error('? No carrier found. Please run: npx prisma db seed')
       return
     }
     
@@ -28,7 +28,7 @@ async function main() {
         isActive: true
       }
     })
-    console.log('✅ Warehouse created/updated:', warehouse.code, '-', warehouse.name)
+    console.log('? Warehouse created/updated:', warehouse.code, '-', warehouse.name)
     
     // Create a zone
     const zone = await prisma.warehouseZone.upsert({
@@ -42,12 +42,12 @@ async function main() {
         isActive: true
       }
     })
-    console.log('✅ Zone created:', zone.code)
+    console.log('? Zone created:', zone.code)
     
     // Create bins
     for (let i = 1; i <= 5; i++) {
       const bin = await prisma.warehouseBin.upsert({
-        where: { zoneId_code: { zoneId: zone.id, code: BIN- } },
+        where: { zoneId_code: { zoneId: zone.id, code: BIN-${code} } },
         update: {},
         create: {
           zoneId: zone.id,
@@ -57,10 +57,10 @@ async function main() {
           isActive: true
         }
       })
-      console.log(  ✅ Bin created: )
+      console.log(  ? Bin created: )
     }
     
-    console.log('\n🎉 Warehouse setup complete!')
+    console.log('\n?? Warehouse setup complete!')
     console.log('Warehouse Code: MAIN-WH')
     console.log('Zone: STORAGE-A')
     console.log('Bins: BIN-1 through BIN-5')
@@ -73,3 +73,4 @@ async function main() {
 }
 
 main()
+

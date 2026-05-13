@@ -9,9 +9,7 @@ export async function GET() {
       orderBy: { createdAt: "desc" }
     })
     return NextResponse.json(orders)
-  } catch {
-    return NextResponse.json([])
-  }
+  } catch { return NextResponse.json([]) }
 }
 
 export async function POST(request) {
@@ -20,19 +18,14 @@ export async function POST(request) {
     const orderNumber = "ORD-" + Date.now()
     const order = await prisma.order.create({
       data: {
-        orderNumber,
-        customerName: body.customerName,
-        customerEmail: body.customerEmail,
-        customerPhone: body.customerPhone,
-        deliveryAddress: body.deliveryAddress,
-        pickupAddress: body.pickupAddress,
-        status: body.status || "PENDING",
-        priority: body.priority || "NORMAL",
-        driverId: body.driverId || null,
-        vehicleId: body.vehicleId || null,
+        orderNumber, customerName: body.customerName, customerEmail: body.customerEmail,
+        customerPhone: body.customerPhone, deliveryAddress: body.deliveryAddress,
+        pickupAddress: body.pickupAddress, status: body.status || "PENDING",
+        priority: body.priority || "NORMAL", driverId: body.driverId || null, vehicleId: body.vehicleId || null,
       },
       include: { driver: true, vehicle: true }
     })
+    await prisma.auditLog.create({ data: { actor: "admin", action: "CREATE_ORDER", resource: "Order", resourceId: order.id, after: order as any } })
     return NextResponse.json(order)
   } catch (error) {
     return NextResponse.json({ error: error.message }, { status: 500 })

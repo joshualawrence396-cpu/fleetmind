@@ -17,7 +17,9 @@
         "@anthropic-ai/sdk": "^0.95.0",
         "@auth/core": "^0.34.3",
         "@auth/prisma-adapter": "^2.11.2",
+        "@clerk/nextjs": "^7.3.2",
         "@prisma/client": "^6.19.3",
+        "@stripe/stripe-js": "^9.4.0",
         "bcryptjs": "^3.0.3",
         "cookie": "^1.1.1",
         "framer-motion": "^12.38.0",
@@ -26,10 +28,13 @@
         "jsonwebtoken": "^9.0.3",
         "lucide-react": "^1.14.0",
         "next": "16.2.4",
+        "next-auth": "^4.24.14",
+        "nodemailer": "^7.0.13",
         "pg": "^8.20.0",
         "react": "^18.3.1",
         "react-dom": "^18.3.1",
         "recharts": "^3.8.1",
+        "stripe": "^22.1.1",
         "zod": "^3.22.4"
     },
     "devDependencies": {

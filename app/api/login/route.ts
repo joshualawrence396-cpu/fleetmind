@@ -1,60 +1,58 @@
-﻿import { NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
-import bcrypt from 'bcryptjs'
+﻿import { NextResponse } from 'next/server';
+import bcrypt from 'bcryptjs';
+import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient()
+const prisma = new PrismaClient();
 
-export async function POST(request) {
+export async function POST(request: Request) {
   try {
-    const { email, password } = await request.json()
+    const body = await request.json();
+    const { email, password } = body;
     
-    console.log('Login attempt for:', email)
+    if (!email || !password) {
+      return NextResponse.json({ error: 'Email and password required' }, { status: 400 });
+    }
     
-    // Find user
+    // Find user - NO include fields that don't exist
     const user = await prisma.user.findUnique({
       where: { email: email }
-    })
+    });
     
     if (!user) {
-      console.log('User not found')
-      return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 })
+      return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
     }
     
     // Check password
-    const valid = await bcrypt.compare(password, user.password)
+    const isValid = await bcrypt.compare(password, user.password);
     
-    if (!valid) {
-      console.log('Invalid password')
-      return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 })
+    if (!isValid) {
+      return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
     }
     
-    // Create session
-    const sessionData = {
-      id: user.id,
-      email: user.email,
-      name: user.name,
-      role: user.role
-    }
-    
+    // Return success
     const response = NextResponse.json({ 
-      success: true, 
-      user: sessionData 
-    })
+      success: true,
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role
+      }
+    });
     
-    // Set cookie
-    response.cookies.set('auth', JSON.stringify(sessionData), {
+    // Set session cookie
+    response.cookies.set('userId', user.id, {
       httpOnly: true,
-      secure: false,
+      secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * 7,
-      path: '/'
-    })
+      path: '/',
+      maxAge: 60 * 60 * 24 * 7
+    });
     
-    console.log('Login successful for:', email)
-    return response
+    return response;
     
   } catch (error) {
-    console.error('Login error:', error)
-    return NextResponse.json({ error: 'Server error' }, { status: 500 })
+    console.error('Login error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
