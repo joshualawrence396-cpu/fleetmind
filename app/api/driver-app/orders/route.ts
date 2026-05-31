@@ -2,17 +2,14 @@ import { NextResponse } from "next/server"
 import { PrismaClient } from "@prisma/client"
 const prisma = new PrismaClient()
 
-export async function GET(request) {
+export async function GET() {
   try {
-    const { searchParams } = new URL(request.url)
-    const driverId = searchParams.get("driverId")
     const orders = await prisma.order.findMany({
-      where: driverId ? { driverId } : {},
+      where: { status: { in: ["PENDING", "IN_PROGRESS", "COMPLETED"] } },
       include: { driver: true, vehicle: true },
-      orderBy: { createdAt: "desc" }
+      orderBy: { createdAt: "desc" },
+      take: 30,
     })
     return NextResponse.json(orders)
-  } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
-  }
+  } catch { return NextResponse.json([]) }
 }

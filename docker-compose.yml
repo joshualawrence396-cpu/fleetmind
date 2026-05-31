@@ -1,63 +1,43 @@
-﻿version: '3.8'
+version: "3.9"
 
 services:
-  redis:
-    image: redis:alpine
-    container_name: fleetmind-redis
+  app:
+    build: .
     ports:
-      - "6379:6379"
-    volumes:
-      - redis-data:/data
-    restart: unless-stopped
-
-  postgres:
-    image: postgis/postgis:16-3.4
-    container_name: fleetmind-postgres
+      - "3000:3000"
     environment:
-      POSTGRES_USER: fleetmind
-      POSTGRES_PASSWORD: fleetmind123
-      POSTGRES_DB: fleetmind
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
-    restart: unless-stopped
-
-  timescaledb:
-    image: timescale/timescaledb:latest-pg16
-    container_name: fleetmind-timescale
-    environment:
-      POSTGRES_PASSWORD: timescale123
-    ports:
-      - "5433:5432"
-    volumes:
-      - timescale-data:/var/lib/postgresql/data
-    restart: unless-stopped
-
-  redis-commander:
-    image: rediscommander/redis-commander:latest
-    container_name: fleetmind-redis-commander
-    environment:
-      REDIS_HOSTS: local:redis:6379
-    ports:
-      - "8081:8081"
+      - DATABASE_URL=${DATABASE_URL}
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+      - NEXTAUTH_URL=${NEXTAUTH_URL}
+      - RESEND_API_KEY=${RESEND_API_KEY}
+      - CLOUDFLARE_ACCOUNT_ID=${CLOUDFLARE_ACCOUNT_ID}
+      - CLOUDFLARE_API_TOKEN=${CLOUDFLARE_API_TOKEN}
+      - PAYFAST_MERCHANT_ID=${PAYFAST_MERCHANT_ID}
+      - PAYFAST_MERCHANT_KEY=${PAYFAST_MERCHANT_KEY}
+      - UPSTASH_REDIS_REST_URL=${UPSTASH_REDIS_REST_URL}
+      - UPSTASH_REDIS_REST_TOKEN=${UPSTASH_REDIS_REST_TOKEN}
+      - ML_SERVICE_URL=http://ml-service:8000
+      - ORTOOLS_SERVICE_URL=http://ml-service:8000
     depends_on:
-      - redis
+      - ml-service
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/me"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
-  pgadmin:
-    image: dpage/pgadmin4:latest
-    container_name: fleetmind-pgadmin
-    environment:
-      PGADMIN_DEFAULT_EMAIL: admin@fleetmind.com
-      PGADMIN_DEFAULT_PASSWORD: admin123
+  ml-service:
+    build: ./routing-service
     ports:
-      - "5050:80"
-    depends_on:
-      - postgres
+      - "8000:8000"
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
-volumes:
-  redis-data:
-  postgres-data:
-  timescale-data:
+networks:
+  default:
+    name: fleetmind-network

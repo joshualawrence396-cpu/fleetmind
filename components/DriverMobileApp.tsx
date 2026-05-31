@@ -62,7 +62,7 @@ export function DriverMobileApp() {
                 <div style={{fontWeight:"bold",fontSize:14,marginBottom:10,color:"#1e293b"}}>My Deliveries</div>
                 {orders.length===0 && <div style={{textAlign:"center",padding:30,color:"#94a3b8",fontSize:13}}>No orders assigned yet</div>}
                 {orders.map(o=>(
-                  <div key={o.id} style={{background:"white",borderRadius:12,padding:14,marginBottom:10,boxShadow:"0 1px 4px rgba(0,0,0,0.08)"}}>
+                  <div key={o.id} style={{background: "transparent",borderRadius:12,padding:14,marginBottom:10,boxShadow:"0 1px 4px rgba(0,0,0,0.08)"}}>
                     <div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}>
                       <span style={{fontWeight:"bold",fontSize:13}}>{o.orderNumber}</span>
                       <span style={{padding:"2px 8px",borderRadius:10,fontSize:10,fontWeight:"600",background:statusColor(o.status)+"20",color:statusColor(o.status)}}>{o.status}</span>
@@ -90,7 +90,7 @@ export function DriverMobileApp() {
       <p style={{color:"#64748b",marginBottom:20}}>Preview the driver app experience. Select a driver to see their orders.</p>
       <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:16}}>
         {drivers.map(d=>(
-          <div key={d.id} onClick={()=>loadDriverOrders(d)} style={{background:"white",borderRadius:12,padding:20,boxShadow:"0 1px 3px rgba(0,0,0,0.1)",cursor:"pointer",border:"2px solid transparent",transition:"all 0.2s"}}
+          <div key={d.id} onClick={()=>loadDriverOrders(d)} style={{background: "transparent",borderRadius:12,padding:20,boxShadow:"0 1px 3px rgba(0,0,0,0.1)",cursor:"pointer",border:"2px solid transparent",transition:"all 0.2s"}}
             onMouseOver={e=>(e.currentTarget.style.borderColor="#667eea")} onMouseOut={e=>(e.currentTarget.style.borderColor="transparent")}>
             <div style={{width:50,height:50,borderRadius:"50%",background:"#f5f3ff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:24,marginBottom:12}}>👤</div>
             <div style={{fontWeight:"bold"}}>{d.name}</div>

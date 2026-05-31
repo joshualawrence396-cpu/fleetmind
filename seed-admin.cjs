@@ -8,6 +8,6 @@ async function main() {
     update:{password:hash,role:"admin",plan:"Enterprise",name:"Administrator"},
     create:{email:"admin@fleetmind.com",password:hash,role:"admin",plan:"Enterprise",name:"Administrator",company:"FleetMind SA"}
   })
-  console.log("Admin seeded!")
+  console.log("Admin ready!")
 }
 main().catch(console.error).finally(()=>p.$disconnect())

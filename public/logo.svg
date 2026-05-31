@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#6366f1"/>
+      <stop offset="100%" style="stop-color:#8b5cf6"/>
+    </linearGradient>
+    <linearGradient id="shine" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:rgba(255,255,255,0.3)"/>
+      <stop offset="100%" style="stop-color:rgba(255,255,255,0)"/>
+    </linearGradient>
+  </defs>
+  <!-- Background circle -->
+  <circle cx="100" cy="100" r="95" fill="url(#bg)"/>
+  <circle cx="100" cy="100" r="95" fill="url(#shine)"/>
+  <!-- Truck body -->
+  <rect x="30" y="95" width="90" height="50" rx="6" fill="white" opacity="0.95"/>
+  <!-- Truck cab -->
+  <rect x="105" y="108" width="55" height="37" rx="6" fill="white" opacity="0.95"/>
+  <!-- Cab window -->
+  <rect x="112" y="113" width="32" height="18" rx="3" fill="url(#bg)" opacity="0.7"/>
+  <!-- Truck front grill -->
+  <rect x="155" y="120" width="12" height="20" rx="3" fill="white" opacity="0.8"/>
+  <!-- Wheels -->
+  <circle cx="60" cy="150" r="14" fill="#1e1b4b"/>
+  <circle cx="60" cy="150" r="8" fill="#6366f1"/>
+  <circle cx="60" cy="150" r="3" fill="white"/>
+  <circle cx="105" cy="150" r="14" fill="#1e1b4b"/>
+  <circle cx="105" cy="150" r="8" fill="#6366f1"/>
+  <circle cx="105" cy="150" r="3" fill="white"/>
+  <circle cx="145" cy="150" r="12" fill="#1e1b4b"/>
+  <circle cx="145" cy="150" r="7" fill="#6366f1"/>
+  <circle cx="145" cy="150" r="2.5" fill="white"/>
+  <!-- Route line / path -->
+  <path d="M 35 88 Q 60 65 100 70 Q 140 75 165 60" stroke="white" stroke-width="3" fill="none" stroke-dasharray="6,4" opacity="0.6"/>
+  <!-- Location pin -->
+  <circle cx="165" cy="55" r="12" fill="#10b981"/>
+  <path d="M165 48 C161 48 158 51 158 55 C158 60 165 67 165 67 C165 67 172 60 172 55 C172 51 169 48 165 48Z" fill="white"/>
+  <circle cx="165" cy="55" r="3" fill="#10b981"/>
+  <!-- Speed lines -->
+  <line x1="18" y1="108" x2="30" y2="108" stroke="white" stroke-width="2.5" stroke-linecap="round" opacity="0.5"/>
+  <line x1="14" y1="118" x2="30" y2="118" stroke="white" stroke-width="2.5" stroke-linecap="round" opacity="0.4"/>
+  <line x1="18" y1="128" x2="30" y2="128" stroke="white" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/>
+</svg>

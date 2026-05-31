@@ -1,0 +1,62 @@
+import { NextResponse } from "next/server"
+import crypto from "crypto"
+
+const PLANS: Record<string, { name: string; amount: number; description: string }> = {
+  Starter: { name: "FleetMind Starter", amount: 1499, description: "Up to 5 vehicles, 10 drivers, GPS tracking" },
+  Growth:  { name: "FleetMind Growth",  amount: 1199, description: "Up to 25 vehicles, all features, AI routing" },
+  Enterprise: { name: "FleetMind Enterprise", amount: 0, description: "Unlimited fleet, white-label, 24/7 support" },
+}
+
+export async function POST(request: Request) {
+  try {
+    const { plan, email, name, userId, vehicles = 1 } = await request.json()
+    if (!plan) return NextResponse.json({ error: "Plan required" }, { status: 400 })
+    if (plan === "Enterprise") return NextResponse.json({ url: `mailto:sales@fleetmind.co.za?subject=Enterprise Inquiry from ${email}` })
+
+    const planData = PLANS[plan]
+    if (!planData) return NextResponse.json({ error: "Invalid plan" }, { status: 400 })
+
+    const merchantId   = process.env.PAYFAST_MERCHANT_ID  || "10000100"
+    const merchantKey  = process.env.PAYFAST_MERCHANT_KEY || "46f0cd694581a"
+    const passphrase   = process.env.PAYFAST_PASSPHRASE   || ""
+    const isSandbox    = (process.env.NEXT_PUBLIC_PAYFAST_ENV || "sandbox") !== "production"
+    const baseUrl      = process.env.NEXTAUTH_URL || "http://localhost:3000"
+    const amount       = (planData.amount * Math.max(1, vehicles)).toFixed(2)
+
+    const data: Record<string, string> = {
+      merchant_id:   merchantId,
+      merchant_key:  merchantKey,
+      return_url:    `${baseUrl}/dashboard?upgraded=true&plan=${plan}`,
+      cancel_url:    `${baseUrl}/login?cancelled=true`,
+      notify_url:    `${baseUrl}/api/payfast/webhook`,
+      name_first:    (name || "Customer").split(" ")[0],
+      name_last:     (name || "Customer").split(" ").slice(1).join(" ") || "User",
+      email_address: email || "",
+      m_payment_id:  `FM-${userId || "guest"}-${Date.now()}`,
+      amount,
+      item_name:     `${planData.name} (${vehicles} vehicle${vehicles > 1 ? "s" : ""})`,
+      item_description: planData.description,
+      custom_str1:   userId || "",
+      custom_str2:   plan,
+      custom_int1:   vehicles.toString(),
+      subscription_type: "1",
+      billing_date:  new Date().toISOString().split("T")[0],
+      recurring_amount: amount,
+      frequency:     "3",
+      cycles:        "0",
+    }
+
+    const filteredData = Object.fromEntries(Object.entries(data).filter(([_, v]) => v !== ""))
+    const paramStr = Object.entries(filteredData)
+      .map(([k, v]) => `${k}=${encodeURIComponent(String(v).trim()).replace(/%20/g, "+")}`)
+      .join("&")
+    const sigStr = passphrase ? `${paramStr}&passphrase=${encodeURIComponent(passphrase.trim())}` : paramStr
+    filteredData.signature = crypto.createHash("md5").update(sigStr).digest("hex")
+
+    const basePayFast = isSandbox ? "https://sandbox.payfast.co.za/eng/process" : "https://www.payfast.co.za/eng/process"
+    const qs = Object.entries(filteredData).map(([k, v]) => `${k}=${encodeURIComponent(v)}`).join("&")
+    return NextResponse.json({ url: `${basePayFast}?${qs}`, amount, plan, sandbox: isSandbox })
+  } catch (e: any) {
+    return NextResponse.json({ error: e.message }, { status: 500 })
+  }
+}

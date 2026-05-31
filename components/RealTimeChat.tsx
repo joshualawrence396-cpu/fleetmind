@@ -30,7 +30,7 @@ export function RealTimeChat() {
     <div>
       <h2 style={{fontSize:22,fontWeight:"bold",marginBottom:20}}>💬 Team Chat</h2>
       <div style={{display:"grid",gridTemplateColumns:"220px 1fr",gap:16,height:600}}>
-        <div style={{background:"white",borderRadius:12,padding:16,boxShadow:"0 1px 3px rgba(0,0,0,0.1)",overflowY:"auto"}}>
+        <div style={{background: "transparent",borderRadius:12,padding:16,boxShadow:"0 1px 3px rgba(0,0,0,0.1)",overflowY:"auto"}}>
           <div style={{fontWeight:"bold",fontSize:13,color:"#64748b",marginBottom:12}}>CHANNELS</div>
           {contacts.map(c=>(
             <div key={c.id} onClick={()=>setActiveChat(c.id)} style={{padding:"10px 12px",borderRadius:8,cursor:"pointer",marginBottom:4,background:activeChat===c.id?"#f1f5f9":"transparent",fontWeight:activeChat===c.id?"600":"400",fontSize:14}}>
@@ -38,7 +38,7 @@ export function RealTimeChat() {
             </div>
           ))}
         </div>
-        <div style={{background:"white",borderRadius:12,boxShadow:"0 1px 3px rgba(0,0,0,0.1)",display:"flex",flexDirection:"column"}}>
+        <div style={{background: "transparent",borderRadius:12,boxShadow:"0 1px 3px rgba(0,0,0,0.1)",display:"flex",flexDirection:"column"}}>
           <div style={{padding:"16px 20px",borderBottom:"1px solid #e2e8f0",fontWeight:"bold"}}>
             {contacts.find(c=>c.id===activeChat)?.name || "Chat"}
           </div>

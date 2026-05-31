@@ -24,7 +24,7 @@ export function APIDocumentation() {
       <p style={{color:"#64748b",marginBottom:20}}>Base URL: <code style={{background:"#f1f5f9",padding:"2px 8px",borderRadius:4}}>http://localhost:3000</code></p>
 
       {endpoints.map(ep=>(
-        <div key={ep.id} style={{background:"white",borderRadius:10,marginBottom:10,boxShadow:"0 1px 3px rgba(0,0,0,0.1)",overflow:"hidden"}}>
+        <div key={ep.id} style={{background: "transparent",borderRadius:10,marginBottom:10,boxShadow:"0 1px 3px rgba(0,0,0,0.1)",overflow:"hidden"}}>
           <div onClick={()=>setOpen(open===ep.id?"":ep.id)} style={{padding:"14px 18px",cursor:"pointer",display:"flex",alignItems:"center",gap:12}}>
             <span style={{padding:"3px 10px",borderRadius:4,background:methodColor(ep.method),color:"white",fontSize:12,fontWeight:"bold",minWidth:50,textAlign:"center"}}>{ep.method}</span>
             <code style={{fontSize:14,fontWeight:"500",color:"#1e293b"}}>{ep.path}</code>

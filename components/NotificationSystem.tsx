@@ -36,10 +36,10 @@ export function NotificationSystem() {
         ))}
       </div>
 
-      {filtered.length === 0 && <div style={{background:"white",borderRadius:12,padding:40,textAlign:"center",color:"#666",boxShadow:"0 1px 3px rgba(0,0,0,0.1)"}}>No notifications in this category.</div>}
+      {filtered.length === 0 && <div style={{background: "transparent",borderRadius:12,padding:40,textAlign:"center",color:"#666",boxShadow:"0 1px 3px rgba(0,0,0,0.1)"}}>No notifications in this category.</div>}
 
       {filtered.map(n=>(
-        <div key={n.id} style={{background:"white",borderRadius:10,padding:16,marginBottom:10,boxShadow:"0 1px 3px rgba(0,0,0,0.1)",borderLeft:"4px solid "+typeColor(n.type),opacity:n.read?0.7:1}}>
+        <div key={n.id} style={{background: "transparent",borderRadius:10,padding:16,marginBottom:10,boxShadow:"0 1px 3px rgba(0,0,0,0.1)",borderLeft:"4px solid "+typeColor(n.type),opacity:n.read?0.7:1}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
             <div style={{display:"flex",alignItems:"flex-start",gap:12}}>
               <div style={{width:36,height:36,borderRadius:"50%",background:typeBg(n.type),display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}}>{typeIcon(n.type)}</div>

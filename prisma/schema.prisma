@@ -1,4 +1,4 @@
-﻿generator client {
+generator client {
   provider = "prisma-client-js"
 }
 
@@ -8,56 +8,572 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  password  String
-  name      String?
-  role      String   @default("CLIENT") // ADMIN, CLIENT, DRIVER
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  
-  // Relations
-  clientProfile Client?
-  driverProfile Driver?
-  orders        Order[]
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  password      String?
+  role          String    @default("user")
+  plan          String    @default("Basic")
+  company       String?
+  phone         String?
+  isActive      Boolean   @default(true)
+  carrierId     String?
+  carrier       Carrier?  @relation(fields: [carrierId], references: [id])
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 }
 
-model Client {
-  id        String   @id @default(cuid())
-  userId    String   @unique
-  user      User     @relation(fields: [userId], references: [id])
-  companyName String
-  phone     String
-  address   String
-  city      String
-  
-  orders    Order[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model Carrier {
+  id              String    @id @default(cuid())
+  slug            String    @unique
+  name            String
+  tradingName     String?
+  countryCode     String    @default("ZA")
+  currency        String    @default("ZAR")
+  timezone        String    @default("Africa/Johannesburg")
+  isActive        Boolean   @default(true)
+  users           User[]
+  hubs            Hub[]
+  vehicles        Vehicle[]
+  drivers         Driver[]
+  orders          Order[]
+  warehouses      Warehouse[]
+  shippers        Shipper[]
+  courierAccounts CourierAccount[]
+  agentRuns       AgentRun[]
+  notifications   Notification[]
+  routes          Route[]
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+model Hub {
+  id          String    @id @default(cuid())
+  carrierId   String
+  code        String
+  name        String
+  type        String    @default("DEPOT")
+  address     String
+  latitude    Float
+  longitude   Float
+  serviceArea Json?
+  openHours   Json?
+  capacity    Json?
+  isActive    Boolean   @default(true)
+  carrier     Carrier   @relation(fields: [carrierId], references: [id])
+  vehicles    Vehicle[]
+  routes      Route[]
+  createdAt   DateTime  @default(now())
+
+  @@unique([carrierId, code])
+  @@index([carrierId])
+}
+
+model Shipper {
+  id          String    @id @default(cuid())
+  carrierId   String
+  legalName   String
+  email       String
+  phone       String?
+  address     String?
+  contactName String?
+  webhookUrl  String?
+  apiKeyHash  String?   @unique
+  isActive    Boolean   @default(true)
+  carrier     Carrier   @relation(fields: [carrierId], references: [id])
+  orders      Order[]
+  createdAt   DateTime  @default(now())
+
+  @@index([carrierId])
+}
+
+model Vehicle {
+  id                 String    @id @default(cuid())
+  carrierId          String?
+  hubId              String?
+  userId             String?
+  registration       String    @unique
+  make               String
+  model              String
+  year               Int?
+  type               String    @default("VAN_SMALL")
+  fuelType           String    @default("DIESEL")
+  status             String    @default("AVAILABLE")
+  latitude           Float?
+  longitude          Float?
+  capacityKg         Float?
+  capacityM3         Float?
+  odometerKm         Int?
+  nextServiceDate    DateTime?
+  insuranceExpiry    DateTime?
+  telematicsDeviceId String?
+  driverId           String?   @unique
+  driver             Driver?   @relation(fields: [driverId], references: [id])
+  carrier            Carrier?  @relation(fields: [carrierId], references: [id])
+  hub                Hub?      @relation(fields: [hubId], references: [id])
+  orders             Order[]
+  maintenanceRecords MaintenanceRecord[]
+  fuelEntries        FuelEntry[]
+  telematicsEvents   TelematicsEvent[]
+  telematicsAlerts   TelematicsAlert[]
+  routes             Route[]
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  @@index([carrierId])
 }
 
 model Driver {
-  id        String   @id @default(cuid())
-  userId    String   @unique
-  user      User     @relation(fields: [userId], references: [id])
-  license   String
-  phone     String
-  status    String   @default("AVAILABLE")
-  
-  orders    Order[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id               String    @id @default(cuid())
+  carrierId        String?
+  userId           String?
+  name             String
+  email            String    @unique
+  phone            String?
+  licenseNumber    String?
+  licenseExpiresAt DateTime?
+  pdpExpiresAt     DateTime?
+  status           String    @default("ACTIVE")
+  rating           Float?
+  totalDeliveries  Int       @default(0)
+  vehicle          Vehicle?
+  carrier          Carrier?  @relation(fields: [carrierId], references: [id])
+  orders           Order[]
+  shifts           DriverShift[]
+  stops            Stop[]
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@index([carrierId])
+}
+
+model DriverShift {
+  id        String    @id @default(cuid())
+  driverId  String
+  startedAt DateTime  @default(now())
+  endedAt   DateTime?
+  startKm   Int?
+  endKm     Int?
+  notes     String?
+  driver    Driver    @relation(fields: [driverId], references: [id])
+
+  @@index([driverId])
 }
 
 model Order {
+  id              String    @id @default(cuid())
+  carrierId       String?
+  userId          String?
+  shipperId       String?
+  orderNumber     String    @unique
+  customerName    String
+  customerEmail   String
+  customerPhone   String
+  deliveryAddress String
+  pickupAddress   String
+  status          String    @default("PENDING")
+  priority        String    @default("NORMAL")
+  serviceLevel    String    @default("STANDARD")
+  weightKg        Float?
+  declaredValue   Float?
+  driverName      String?
+  driverId        String?
+  driver          Driver?   @relation(fields: [driverId], references: [id])
+  vehicleId       String?
+  vehicle         Vehicle?  @relation(fields: [vehicleId], references: [id])
+  carrier         Carrier?  @relation(fields: [carrierId], references: [id])
+  shipper         Shipper?  @relation(fields: [shipperId], references: [id])
+  courierBookings CourierBooking[]
+  stops           Stop[]
+  scheduledDate   DateTime?
+  estimatedDelivery DateTime?
+  podPhotoUrl     String?
+  podNote         String?
+  podSignatureUrl String?
+  failureReason   String?
+  completedAt     DateTime?
+  notifiedAt      DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([carrierId])
+  @@index([userId])
+  @@index([status])
+}
+
+model Route {
+  id               String    @id @default(cuid())
+  carrierId        String?
+  hubId            String?
+  vehicleId        String?
+  driverId         String?
+  date             DateTime
+  status           String    @default("PLANNED")
+  totalDistanceKm  Float?
+  totalDurationMin Int?
+  routePolyline    String?
+  optimizedAt      DateTime?
+  carrier          Carrier?  @relation(fields: [carrierId], references: [id])
+  hub              Hub?      @relation(fields: [hubId], references: [id])
+  vehicle          Vehicle?  @relation(fields: [vehicleId], references: [id])
+  stops            Stop[]
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@index([carrierId, date])
+}
+
+model Stop {
+  id               String    @id @default(cuid())
+  routeId          String?
+  orderId          String?
+  driverId         String?
+  sequence         Int       @default(0)
+  type             String    @default("DELIVERY")
+  address          String
+  latitude         Float?
+  longitude        Float?
+  contactName      String?
+  contactPhone     String?
+  serviceTimeMin   Int       @default(5)
+  timeWindowStart  DateTime?
+  timeWindowEnd    DateTime?
+  plannedArrival   DateTime?
+  actualArrival    DateTime?
+  status           String    @default("PENDING")
+  failureReason    String?
+  podPhotoUrl      String?
+  signatureUrl     String?
+  notes            String?
+  route            Route?    @relation(fields: [routeId], references: [id])
+  order            Order?    @relation(fields: [orderId], references: [id])
+  driver           Driver?   @relation(fields: [driverId], references: [id])
+
+  @@index([routeId])
+  @@index([orderId])
+}
+
+model Warehouse {
+  id           String          @id @default(cuid())
+  carrierId    String?
+  userId       String?
+  name         String
+  location     String
+  address      String
+  capacity     Int
+  currentStock Int             @default(0)
+  manager      String?
+  phone        String?
+  latitude     Float?
+  longitude    Float?
+  hasColdChain Boolean         @default(false)
+  hasHazmat    Boolean         @default(false)
+  carrier      Carrier?        @relation(fields: [carrierId], references: [id])
+  items        InventoryItem[]
+  zones        WarehouseZone[]
+  stocktakes   Stocktake[]
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  @@index([carrierId])
+}
+
+model WarehouseZone {
+  id          String         @id @default(cuid())
+  warehouseId String
+  code        String
+  name        String
+  type        String
+  isActive    Boolean        @default(true)
+  warehouse   Warehouse      @relation(fields: [warehouseId], references: [id])
+  bins        WarehouseBin[]
+
+  @@unique([warehouseId, code])
+}
+
+model WarehouseBin {
+  id       String        @id @default(cuid())
+  zoneId   String
+  code     String
+  type     String        @default("SHELF")
+  capacity Json?
+  isActive Boolean       @default(true)
+  zone     WarehouseZone @relation(fields: [zoneId], references: [id])
+
+  @@unique([zoneId, code])
+}
+
+model Stocktake {
+  id            String    @id @default(cuid())
+  warehouseId   String
+  status        String    @default("OPEN")
+  performedById String?
+  notes         String?
+  warehouse     Warehouse @relation(fields: [warehouseId], references: [id])
+  counts        StocktakeCount[]
+  startedAt     DateTime  @default(now())
+  completedAt   DateTime?
+}
+
+model StocktakeCount {
+  id          String    @id @default(cuid())
+  stocktakeId String
+  itemId      String
+  expected    Int
+  counted     Int
+  variance    Int
+  notes       String?
+  stocktake   Stocktake @relation(fields: [stocktakeId], references: [id])
+  createdAt   DateTime  @default(now())
+}
+
+model InventoryItem {
+  id          String    @id @default(cuid())
+  carrierId   String?
+  userId      String?
+  name        String
+  sku         String    @unique
+  category    String
+  quantity    Int
+  unitPrice   Float
+  unitCost    Float?
+  weight      Float?
+  warehouseId String
+  warehouse   Warehouse @relation(fields: [warehouseId], references: [id])
+  minStock    Int       @default(0)
+  maxStock    Int       @default(1000)
+  movements   InventoryMovement[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([carrierId])
+}
+
+model InventoryMovement {
+  id        String        @id @default(cuid())
+  itemId    String
+  type      String
+  quantity  Int
+  reference String?
+  notes     String?
+  item      InventoryItem @relation(fields: [itemId], references: [id])
+  createdAt DateTime      @default(now())
+
+  @@index([itemId])
+}
+
+model MaintenanceRecord {
+  id              String    @id @default(cuid())
+  vehicleId       String
+  type            String
+  description     String
+  cost            Float?
+  odometerKm      Int?
+  performedAt     DateTime
+  performedBy     String?
+  nextServiceDate DateTime?
+  status          String    @default("SCHEDULED")
+  priority        String    @default("NORMAL")
+  vehicle         Vehicle   @relation(fields: [vehicleId], references: [id])
+  createdAt       DateTime  @default(now())
+
+  @@index([vehicleId])
+}
+
+model FuelEntry {
+  id           String   @id @default(cuid())
+  vehicleId    String
+  driverId     String?
+  date         DateTime @default(now())
+  litres       Float
+  costPerLitre Float?
+  totalCost    Float
+  station      String?
+  odometerKm   Int?
+  vehicle      Vehicle  @relation(fields: [vehicleId], references: [id])
+  createdAt    DateTime @default(now())
+
+  @@index([vehicleId])
+}
+
+model TelematicsEvent {
+  id           String   @id @default(cuid())
+  vehicleId    String
+  deviceId     String?
+  timestamp    DateTime @default(now())
+  latitude     Float
+  longitude    Float
+  speedKmh     Float?
+  heading      Float?
+  ignition     Boolean?
+  fuelLevelPct Float?
+  odometerKm   Float?
+  engineRpm    Int?
+  rawData      Json?
+  vehicle      Vehicle  @relation(fields: [vehicleId], references: [id])
+
+  @@index([vehicleId, timestamp])
+}
+
+model TelematicsAlert {
+  id               String    @id @default(cuid())
+  vehicleId        String
+  type             String
+  severity         String    @default("MEDIUM")
+  message          String
+  payload          Json?
+  acknowledgedAt   DateTime?
+  acknowledgedById String?
+  vehicle          Vehicle   @relation(fields: [vehicleId], references: [id])
+  createdAt        DateTime  @default(now())
+
+  @@index([vehicleId])
+}
+
+model CourierAccount {
+  id            String          @id @default(cuid())
+  carrierId     String
+  provider      String
+  name          String
+  apiKey        String?
+  apiSecret     String?
+  accountNumber String?
+  config        Json?
+  isActive      Boolean         @default(true)
+  serviceLevels String[]
+  carrier       Carrier         @relation(fields: [carrierId], references: [id])
+  bookings      CourierBooking[]
+  createdAt     DateTime        @default(now())
+
+  @@index([carrierId])
+}
+
+model CourierBooking {
+  id               String         @id @default(cuid())
+  courierAccountId String
+  orderId          String
+  consignmentNo    String?
+  trackingUrl      String?
+  cost             Float?
+  status           String         @default("BOOKED")
+  provider         String
+  rawResponse      Json?
+  courierAccount   CourierAccount @relation(fields: [courierAccountId], references: [id])
+  order            Order          @relation(fields: [orderId], references: [id])
+  createdAt        DateTime       @default(now())
+
+  @@index([orderId])
+}
+
+model CourierRate {
+  id        String   @id @default(cuid())
+  provider  String
+  orderId   String
+  service   String
+  price     Float
+  currency  String   @default("ZAR")
+  eta       String?
+  rawQuote  Json?
+  createdAt DateTime @default(now())
+
+  @@index([orderId])
+}
+
+model Notification {
+  id         String    @id @default(cuid())
+  carrierId  String?
+  userId     String?
+  orderId    String?
+  type       String
+  channel    String    @default("IN_APP")
+  recipient  String?
+  subject    String?
+  message    String
+  status     String    @default("PENDING")
+  sentAt     DateTime?
+  carrier    Carrier?  @relation(fields: [carrierId], references: [id])
+  createdAt  DateTime  @default(now())
+
+  @@index([carrierId])
+  @@index([orderId])
+}
+
+model AgentRun {
+  id            String    @id @default(cuid())
+  carrierId     String?
+  agentName     String
+  trigger       String
+  inputPayload  Json
+  status        String    @default("RUNNING")
+  steps         Json[]
+  outputPayload Json?
+  error         String?
+  durationMs    Int?
+  carrier       Carrier?  @relation(fields: [carrierId], references: [id])
+  startedAt     DateTime  @default(now())
+  endedAt       DateTime?
+
+  @@index([carrierId, agentName])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     String?
+  carrierId  String?
+  actor      String
+  action     String
+  resource   String
+  resourceId String
+  before     Json?
+  after      Json?
+  ip         String?
+  createdAt  DateTime @default(now())
+
+  @@index([resource, resourceId])
+}
+model Geofence {
   id          String   @id @default(cuid())
-  description String
-  status      String   @default("PENDING")
+  carrierId   String?
+  name        String
+  type        String   @default("CIRCLE")
+  centerLat   Float
+  centerLng   Float
+  radiusKm    Float    @default(1)
+  polygon     Json?
+  isActive    Boolean  @default(true)
+  alertOnEnter Boolean @default(true)
+  alertOnExit  Boolean @default(false)
   createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  clientId    String?
-  client      Client?  @relation(fields: [clientId], references: [id])
-  driverId    String?
-  driver      Driver?  @relation(fields: [driverId], references: [id])
+
+  @@index([carrierId])
+}
+
+model GeofenceEvent {
+  id          String   @id @default(cuid())
+  geofenceId  String
+  vehicleId   String
+  type        String
+  latitude    Float
+  longitude   Float
+  createdAt   DateTime @default(now())
+
+  @@index([vehicleId])
+}
+
+model ReturnOrder {
+  id            String   @id @default(cuid())
+  orderId       String
+  carrierId     String?
+  reason        String
+  status        String   @default("REQUESTED")
+  refundAmount  Float?
+  condition     String?
+  photos        String[]
+  notes         String?
+  resolvedAt    DateTime?
+  createdAt     DateTime @default(now())
+
+  @@index([carrierId])
 }

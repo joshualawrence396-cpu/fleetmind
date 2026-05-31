@@ -1,23 +1,28 @@
 import { NextResponse } from "next/server"
 import { PrismaClient } from "@prisma/client"
+import { getTenantFilter } from "../../../lib/tenant"
 const prisma = new PrismaClient()
 
 export async function GET() {
   try {
+    const filter = await getTenantFilter()
     const vehicles = await prisma.vehicle.findMany({
-      include: { driver: true, maintenanceRecords: { take: 1, orderBy: { createdAt: "desc" } }, fuelEntries: { take: 1, orderBy: { createdAt: "desc" } } },
+      where: Object.keys(filter).length > 0 ? filter : undefined,
+      include: { driver: true },
       orderBy: { createdAt: "desc" }
     })
     return NextResponse.json(vehicles)
   } catch { return NextResponse.json([]) }
 }
 
-export async function POST(request) {
+export async function POST(request: Request) {
   try {
     const body = await request.json()
+    const filter = await getTenantFilter()
     const vehicle = await prisma.vehicle.create({
       data: {
-        registration: body.registration,
+        ...filter,
+        registration: body.registration?.toUpperCase(),
         make: body.make,
         model: body.model,
         year: body.year ? parseInt(body.year) : null,
@@ -26,13 +31,9 @@ export async function POST(request) {
         status: body.status || "AVAILABLE",
         latitude: body.latitude ? parseFloat(body.latitude) : -33.9249,
         longitude: body.longitude ? parseFloat(body.longitude) : 18.4241,
-        capacityKg: body.capacityKg ? parseFloat(body.capacityKg) : null,
-        odometerKm: body.odometerKm ? parseInt(body.odometerKm) : null,
       },
       include: { driver: true }
     })
     return NextResponse.json(vehicle)
-  } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
-  }
+  } catch (error: any) { return NextResponse.json({ error: error.message }, { status: 500 }) }
 }

@@ -1,30 +1,12 @@
-import { NextRequest, NextResponse } from "next/server"
-import { verifyToken } from "./lib/auth"
+import { NextResponse } from "next/server"
+import type { NextRequest } from "next/server"
 
-export function proxy(req: NextRequest) {
-  const token = req.cookies.get("token")?.value
-
-  const protectedRoutes = ["/dashboard"]
-
-  const isProtected = protectedRoutes.some((route) =>
-    req.nextUrl.pathname.startsWith(route)
-  )
-
-  if (isProtected && !token) {
-    return NextResponse.redirect(new URL("/auth/login", req.url))
-  }
-
-  if (token) {
-    const verified = verifyToken(token)
-
-    if (!verified) {
-      return NextResponse.redirect(new URL("/auth/login", req.url))
-    }
-  }
-
+export function proxy(request: NextRequest) {
+  const { pathname } = request.nextUrl
+  // Never auto-redirect the home page - let client-side handle it
   return NextResponse.next()
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|icons|sw.js|manifest.json).*)"],
 }

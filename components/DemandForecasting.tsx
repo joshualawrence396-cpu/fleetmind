@@ -36,24 +36,24 @@ export function DemandForecasting() {
       <h2 style={{fontSize:22,fontWeight:"bold",marginBottom:20}}>🔮 Demand Forecasting</h2>
 
       <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:16,marginBottom:20}}>
-        <div style={{background:"white",padding:18,borderRadius:12,boxShadow:"0 1px 3px rgba(0,0,0,0.1)",borderLeft:"4px solid #667eea",textAlign:"center"}}>
+        <div style={{background: "transparent",padding:18,borderRadius:12,boxShadow:"0 1px 3px rgba(0,0,0,0.1)",borderLeft:"4px solid #667eea",textAlign:"center"}}>
           <div style={{fontSize:28}}>📦</div>
           <div style={{fontSize:22,fontWeight:"bold"}}>{totalOrders}</div>
           <div style={{color:"#64748b",fontSize:13}}>Predicted Orders (7 days)</div>
         </div>
-        <div style={{background:"white",padding:18,borderRadius:12,boxShadow:"0 1px 3px rgba(0,0,0,0.1)",borderLeft:"4px solid #10b981",textAlign:"center"}}>
+        <div style={{background: "transparent",padding:18,borderRadius:12,boxShadow:"0 1px 3px rgba(0,0,0,0.1)",borderLeft:"4px solid #10b981",textAlign:"center"}}>
           <div style={{fontSize:28}}>💰</div>
-          <div style={{fontSize:22,fontWeight:"bold"}}>R{totalRevenue.toLocaleString()}</div>
+          <div style={{fontSize:22,fontWeight:"bold"}}>R{totalRevenue.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</div>
           <div style={{color:"#64748b",fontSize:13}}>Predicted Revenue</div>
         </div>
-        <div style={{background:"white",padding:18,borderRadius:12,boxShadow:"0 1px 3px rgba(0,0,0,0.1)",borderLeft:"4px solid #f59e0b",textAlign:"center"}}>
+        <div style={{background: "transparent",padding:18,borderRadius:12,boxShadow:"0 1px 3px rgba(0,0,0,0.1)",borderLeft:"4px solid #f59e0b",textAlign:"center"}}>
           <div style={{fontSize:28}}>📈</div>
           <div style={{fontSize:22,fontWeight:"bold"}}>{peakDay.day}</div>
           <div style={{color:"#64748b",fontSize:13}}>Busiest Day ({peakDay.predicted} orders)</div>
         </div>
       </div>
 
-      <div style={{background:"white",borderRadius:12,padding:24,boxShadow:"0 1px 3px rgba(0,0,0,0.1)",marginBottom:20}}>
+      <div style={{background: "transparent",borderRadius:12,padding:24,boxShadow:"0 1px 3px rgba(0,0,0,0.1)",marginBottom:20}}>
         <h3 style={{marginBottom:20,fontWeight:"bold"}}>📊 7-Day Order Forecast</h3>
         <div style={{display:"flex",alignItems:"flex-end",gap:12,height:200}}>
           {forecast.map((f,i)=>(
@@ -72,7 +72,7 @@ export function DemandForecasting() {
         </div>
       </div>
 
-      <div style={{background:"white",borderRadius:12,padding:20,boxShadow:"0 1px 3px rgba(0,0,0,0.1)"}}>
+      <div style={{background: "transparent",borderRadius:12,padding:20,boxShadow:"0 1px 3px rgba(0,0,0,0.1)"}}>
         <h3 style={{marginBottom:15,fontWeight:"bold"}}>👥 Staffing Recommendations</h3>
         <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:8}}>
           {forecast.map(f=>(

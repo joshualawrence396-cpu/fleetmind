@@ -1,44 +1,53 @@
 import { NextResponse } from "next/server"
 import { PrismaClient } from "@prisma/client"
+import { cacheGet, cacheSet } from "../../../lib/redis"
+
 const prisma = new PrismaClient()
 
 export async function GET() {
   try {
+    const cacheKey = "analytics:main"
+    const cached = await cacheGet(cacheKey)
+    if (cached) return NextResponse.json(typeof cached === "string" ? JSON.parse(cached) : cached)
+
     const [vehicles, drivers, orders, inventory, fuel, maintenance] = await Promise.all([
       prisma.vehicle.findMany(),
       prisma.driver.findMany(),
-      prisma.order.findMany(),
+      prisma.order.findMany({ orderBy: { createdAt: "desc" } }),
       prisma.inventoryItem.findMany(),
-      prisma.fuelEntry.findMany(),
-      prisma.maintenanceRecord.findMany()
+      prisma.fuelEntry.findMany({ orderBy: { createdAt: "desc" }, take: 100 }),
+      prisma.maintenanceRecord.findMany({ orderBy: { createdAt: "desc" }, take: 50 }),
     ])
-    const completedOrders = orders.filter(o => o.status === "COMPLETED").length
-    const pendingOrders = orders.filter(o => o.status === "PENDING").length
-    const inProgressOrders = orders.filter(o => o.status === "IN_PROGRESS").length
-    const activeVehicles = vehicles.filter(v => v.status === "ON_ROUTE").length
-    const availableVehicles = vehicles.filter(v => v.status === "AVAILABLE").length
-    const maintenanceVehicles = vehicles.filter(v => v.status === "MAINTENANCE").length
-    const totalFuelCost = fuel.reduce((s, f) => s + f.totalCost, 0)
-    const totalFuelLitres = fuel.reduce((s, f) => s + f.litres, 0)
-    const totalRevenue = completedOrders * 1500
-    const totalInventoryValue = inventory.reduce((s, i) => s + (i.quantity * i.unitPrice), 0)
-    const lowStockItems = inventory.filter(i => i.quantity <= i.minStock).length
-    const scheduledMaintenance = maintenance.filter(m => m.status === "SCHEDULED").length
-    const avgDriverRating = drivers.filter(d => d.rating).reduce((s, d) => s + (d.rating || 0), 0) / (drivers.filter(d => d.rating).length || 1)
 
-    return NextResponse.json({
-      totalRevenue, completedOrders, pendingOrders, inProgressOrders,
-      activeVehicles, availableVehicles, maintenanceVehicles,
+    const completedOrders = orders.filter(o => o.status === "COMPLETED")
+    const today = new Date().toISOString().split("T")[0]
+    const todayOrders = orders.filter(o => o.createdAt.toISOString().split("T")[0] === today)
+
+    const data = {
+      totalVehicles: vehicles.length,
+      activeVehicles: vehicles.filter(v => v.status === "ON_ROUTE").length,
+      availableVehicles: vehicles.filter(v => v.status === "AVAILABLE").length,
+      maintenanceVehicles: vehicles.filter(v => v.status === "MAINTENANCE").length,
+      totalDrivers: drivers.length,
       activeDrivers: drivers.filter(d => d.status === "ACTIVE").length,
-      totalDrivers: drivers.length, totalVehicles: vehicles.length,
-      totalOrders: orders.length, totalInventoryValue, lowStockItems,
-      totalFuelCost, totalFuelLitres, scheduledMaintenance,
-      avgDriverRating: Math.round(avgDriverRating * 10) / 10,
-      completionRate: orders.length > 0 ? Math.round((completedOrders / orders.length) * 100) : 0,
-      netProfit: totalRevenue - totalFuelCost,
-      profitMargin: totalRevenue > 0 ? Math.round(((totalRevenue - totalFuelCost) / totalRevenue) * 100) : 0
-    })
-  } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
-  }
+      totalOrders: orders.length,
+      completedOrders: completedOrders.length,
+      pendingOrders: orders.filter(o => o.status === "PENDING").length,
+      inProgressOrders: orders.filter(o => o.status === "IN_PROGRESS").length,
+      failedOrders: orders.filter(o => o.status === "FAILED").length,
+      todayOrders: todayOrders.length,
+      completionRate: orders.length > 0 ? Math.round((completedOrders.length / orders.length) * 100) : 0,
+      estimatedRevenue: completedOrders.length * 1500,
+      totalFuelCost: fuel.reduce((s, f) => s + (f.totalCost || 0), 0),
+      totalFuelLitres: fuel.reduce((s, f) => s + (f.litres || 0), 0),
+      totalMaintenanceCost: maintenance.reduce((s, m) => s + (m.cost || 0), 0),
+      totalInventoryValue: inventory.reduce((s, i) => s + ((i.quantity || 0) * (i.unitPrice || 0)), 0),
+      totalInventoryItems: inventory.length,
+      lowStockItems: inventory.filter(i => i.quantity <= (i.minStock || 0)).length,
+      generatedAt: new Date().toISOString(),
+    }
+
+    await cacheSet(cacheKey, data, 300)
+    return NextResponse.json(data)
+  } catch (e: any) { return NextResponse.json({ error: e.message }, { status: 500 }) }
 }

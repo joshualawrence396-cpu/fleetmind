@@ -29,7 +29,7 @@ export function InvoiceGeneration() {
             <button onClick={()=>setPreview(false)} style={{padding:"8px 16px",background:"#e2e8f0",border:"none",borderRadius:6,cursor:"pointer"}}>← Back</button>
             <button onClick={printInvoice} style={{padding:"8px 16px",background:"#10b981",color:"white",border:"none",borderRadius:6,cursor:"pointer"}}>🖨️ Print / Save PDF</button>
           </div>
-          <div id="invoice" style={{background:"white",borderRadius:12,padding:40,boxShadow:"0 1px 3px rgba(0,0,0,0.1)",maxWidth:700,margin:"0 auto"}}>
+          <div id="invoice" style={{background: "transparent",borderRadius:12,padding:40,boxShadow:"0 1px 3px rgba(0,0,0,0.1)",maxWidth:700,margin:"0 auto"}}>
             <div style={{display:"flex",justifyContent:"space-between",marginBottom:30}}>
               <div>
                 <div style={{fontSize:28,fontWeight:"bold",color:"#1e293b"}}>🚛 FleetMind</div>
@@ -95,7 +95,7 @@ export function InvoiceGeneration() {
         </div>
       ) : (
         <div>
-          <div style={{background:"white",borderRadius:12,padding:20,boxShadow:"0 1px 3px rgba(0,0,0,0.1)"}}>
+          <div style={{background: "transparent",borderRadius:12,padding:20,boxShadow:"0 1px 3px rgba(0,0,0,0.1)"}}>
             <h3 style={{marginBottom:15,fontWeight:"bold"}}>Completed Orders — Ready for Invoice</h3>
             {orders.length === 0 && <div style={{padding:20,textAlign:"center",color:"#666"}}>No completed orders yet. Complete an order to generate an invoice.</div>}
             {orders.map(o=>(

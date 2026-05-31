@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#6366f1"/>
+      <stop offset="100%" style="stop-color:#8b5cf6"/>
+    </linearGradient>
+  </defs>
+  <rect width="32" height="32" rx="8" fill="url(#bg)"/>
+  <g transform="translate(4, 10)">
+    <!-- Truck body -->
+    <rect x="0" y="3" width="14" height="8" rx="1.5" fill="white"/>
+    <!-- Cab -->
+    <rect x="14" y="5" width="8" height="6" rx="1.5" fill="white"/>
+    <!-- Windshield -->
+    <rect x="15" y="6" width="5" height="3.5" rx="0.5" fill="#6366f1" opacity="0.7"/>
+    <!-- Wheels -->
+    <circle cx="4" cy="12" r="2" fill="#1e1b4b"/>
+    <circle cx="4" cy="12" r="1" fill="white"/>
+    <circle cx="18" cy="12" r="2" fill="#1e1b4b"/>
+    <circle cx="18" cy="12" r="1" fill="white"/>
+    <!-- Speed lines -->
+    <line x1="0" y1="1" x2="6" y2="1" stroke="white" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/>
+    <line x1="0" y1="0" x2="4" y2="0" stroke="white" stroke-width="1" stroke-linecap="round" opacity="0.4"/>
+  </g>
+</svg>

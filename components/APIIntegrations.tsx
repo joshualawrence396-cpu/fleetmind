@@ -31,7 +31,7 @@ export function APIIntegrations() {
       <p style={{color:"#64748b",marginBottom:20}}>Connect your e-commerce platforms to auto-import orders into FleetMind.</p>
 
       {integrations.map(intg=>(
-        <div key={intg.id} style={{background:"white",borderRadius:12,padding:20,marginBottom:16,boxShadow:"0 1px 3px rgba(0,0,0,0.1)",border:connected[intg.id]?"2px solid #10b981":"1px solid #e2e8f0"}}>
+        <div key={intg.id} style={{background: "transparent",borderRadius:12,padding:20,marginBottom:16,boxShadow:"0 1px 3px rgba(0,0,0,0.1)",border:connected[intg.id]?"2px solid #10b981":"1px solid #e2e8f0"}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
             <div style={{display:"flex",alignItems:"center",gap:12}}>
               <div style={{width:44,height:44,borderRadius:10,background:intg.color+"20",display:"flex",alignItems:"center",justifyContent:"center",fontSize:24}}>{intg.icon}</div>
@@ -61,7 +61,7 @@ export function APIIntegrations() {
         </div>
       ))}
 
-      <div style={{background:"white",borderRadius:12,padding:20,boxShadow:"0 1px 3px rgba(0,0,0,0.1)"}}>
+      <div style={{background: "transparent",borderRadius:12,padding:20,boxShadow:"0 1px 3px rgba(0,0,0,0.1)"}}>
         <h3 style={{marginBottom:15,fontWeight:"bold"}}>📋 Integration Logs</h3>
         {logs.map(l=>(
           <div key={l.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 0",borderBottom:"1px solid #f1f5f9"}}>

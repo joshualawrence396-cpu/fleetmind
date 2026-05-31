@@ -1,52 +1,51 @@
-﻿import Redis from 'ioredis'
+import { Redis } from "@upstash/redis"
 
-const getRedisUrl = () => {
-  if (process.env.UPSTASH_REDIS_REST_URL) {
-    return process.env.UPSTASH_REDIS_REST_URL
+// Upstash Redis - free tier 10k commands/day
+// Sign up free at https://upstash.com
+let redis: Redis | null = null
+
+export function getRedis(): Redis | null {
+  if (!process.env.UPSTASH_REDIS_REST_URL || process.env.UPSTASH_REDIS_REST_URL.includes("your_")) {
+    return null
   }
-  return 'redis://localhost:6379'
+  if (!redis) {
+    redis = new Redis({
+      url: process.env.UPSTASH_REDIS_REST_URL!,
+      token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+    })
+  }
+  return redis
 }
 
-export const redis = new Redis(getRedisUrl())
-
-export const STREAMS = {
-  VEHICLE_LOCATIONS: 'stream:vehicle:locations',
-  SHIPMENT_UPDATES: 'stream:shipment:updates',
-  DRIVER_STATUS: 'stream:driver:status',
-  ALERTS: 'stream:alerts'
-}
-
-// Publish event to stream
-export async function publishToStream(stream: string, data: any) {
+export async function cacheGet(key: string): Promise<any> {
   try {
-    await redis.xadd(stream, '*', 'data', JSON.stringify(data))
-  } catch (error) {
-    console.error('Failed to publish to stream:', error)
-  }
+    const r = getRedis()
+    if (!r) return null
+    return await r.get(key)
+  } catch { return null }
 }
 
-// Subscribe to stream (for consumers)
-export async function consumeStream(
-  stream: string, 
-  callback: (data: any) => Promise<void>
-) {
-  let lastId = '0'
-  
-  while (true) {
-    try {
-      const results = await redis.xread('BLOCK', 5000, 'STREAMS', stream, lastId)
-      if (results) {
-        for (const [streamName, messages] of results) {
-          for (const [id, fields] of messages) {
-            const data = JSON.parse(fields[1])
-            await callback(data)
-            lastId = id
-          }
-        }
-      }
-    } catch (error) {
-      console.error('Stream consumption error:', error)
-      await new Promise(resolve => setTimeout(resolve, 1000))
-    }
-  }
+export async function cacheSet(key: string, value: any, ttlSeconds = 300): Promise<void> {
+  try {
+    const r = getRedis()
+    if (!r) return
+    await r.setex(key, ttlSeconds, JSON.stringify(value))
+  } catch {}
+}
+
+export async function cacheDel(key: string): Promise<void> {
+  try {
+    const r = getRedis()
+    if (!r) return
+    await r.del(key)
+  } catch {}
+}
+
+export async function cacheInvalidatePattern(pattern: string): Promise<void> {
+  try {
+    const r = getRedis()
+    if (!r) return
+    const keys = await r.keys(pattern)
+    if (keys.length > 0) await r.del(...keys)
+  } catch {}
 }

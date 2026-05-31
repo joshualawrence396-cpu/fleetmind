@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: fleetmind
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: fleetmind-secrets
+  namespace: fleetmind
+type: Opaque
+stringData:
+  DATABASE_URL: "your_neon_database_url"
+  NEXTAUTH_SECRET: "your_nextauth_secret"
+  NEXTAUTH_URL: "https://fleetmind.co.za"
+  RESEND_API_KEY: "your_resend_key"
+  CLOUDFLARE_ACCOUNT_ID: "your_cf_account_id"
+  CLOUDFLARE_API_TOKEN: "your_cf_api_token"
+  PAYFAST_MERCHANT_ID: "your_merchant_id"
+  PAYFAST_MERCHANT_KEY: "your_merchant_key"
+  UPSTASH_REDIS_REST_URL: "your_redis_url"
+  UPSTASH_REDIS_REST_TOKEN: "your_redis_token"

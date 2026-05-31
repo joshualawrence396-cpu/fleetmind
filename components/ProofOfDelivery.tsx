@@ -45,7 +45,7 @@ export function ProofOfDelivery() {
       <h2 style={{fontSize:22,fontWeight:"bold",marginBottom:20}}>📸 Proof of Delivery</h2>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:20}}>
         <div>
-          <div style={{background:"white",borderRadius:12,padding:20,boxShadow:"0 1px 3px rgba(0,0,0,0.1)",marginBottom:16}}>
+          <div style={{background: "transparent",borderRadius:12,padding:20,boxShadow:"0 1px 3px rgba(0,0,0,0.1)",marginBottom:16}}>
             <h3 style={{marginBottom:15,fontWeight:"bold"}}>🚛 Active Deliveries</h3>
             {orders.length===0 && <div style={{color:"#666",fontSize:13,padding:10}}>No active deliveries. Orders must be IN_PROGRESS to submit POD.</div>}
             {orders.map(o=>(
@@ -58,7 +58,7 @@ export function ProofOfDelivery() {
           </div>
 
           {selected && (
-            <div style={{background:"white",borderRadius:12,padding:20,boxShadow:"0 1px 3px rgba(0,0,0,0.1)"}}>
+            <div style={{background: "transparent",borderRadius:12,padding:20,boxShadow:"0 1px 3px rgba(0,0,0,0.1)"}}>
               <h3 style={{marginBottom:15,fontWeight:"bold"}}>Submit POD - {selected.orderNumber}</h3>
               <div style={{marginBottom:12}}>
                 <label style={{display:"block",fontWeight:"500",marginBottom:6,fontSize:13}}>📸 Upload Photo</label>
@@ -76,7 +76,7 @@ export function ProofOfDelivery() {
           )}
         </div>
 
-        <div style={{background:"white",borderRadius:12,padding:20,boxShadow:"0 1px 3px rgba(0,0,0,0.1)"}}>
+        <div style={{background: "transparent",borderRadius:12,padding:20,boxShadow:"0 1px 3px rgba(0,0,0,0.1)"}}>
           <h3 style={{marginBottom:15,fontWeight:"bold"}}>✅ Completed Deliveries ({done.length})</h3>
           {done.length===0 && <div style={{color:"#666",fontSize:13}}>No completed deliveries yet.</div>}
           {done.map((d,i)=>(

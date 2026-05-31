@@ -39,7 +39,7 @@ export function BarcodeScanner() {
       <h2 style={{fontSize:22,fontWeight:"bold",marginBottom:20}}>📦 Barcode Scanner</h2>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:20}}>
         <div>
-          <div style={{background:"white",borderRadius:12,padding:20,boxShadow:"0 1px 3px rgba(0,0,0,0.1)",marginBottom:16}}>
+          <div style={{background: "transparent",borderRadius:12,padding:20,boxShadow:"0 1px 3px rgba(0,0,0,0.1)",marginBottom:16}}>
             <h3 style={{marginBottom:15,fontWeight:"bold"}}>Scan Barcode</h3>
             <select value={action} onChange={e=>setAction(e.target.value)} style={{width:"100%",padding:10,marginBottom:12,border:"1px solid #e2e8f0",borderRadius:6,fontSize:14}}>
               <option value="SCAN_IN">📥 Scan In (Receiving)</option>
@@ -64,7 +64,7 @@ export function BarcodeScanner() {
           </div>
 
           {result && (
-            <div style={{background:"white",borderRadius:12,padding:20,boxShadow:"0 1px 3px rgba(0,0,0,0.1)"}}>
+            <div style={{background: "transparent",borderRadius:12,padding:20,boxShadow:"0 1px 3px rgba(0,0,0,0.1)"}}>
               <h3 style={{marginBottom:15,fontWeight:"bold"}}>Scan Result</h3>
               {result.order && (
                 <div style={{background:"#f0fdf4",borderRadius:8,padding:14,marginBottom:10,border:"1px solid #bbf7d0"}}>
@@ -91,7 +91,7 @@ export function BarcodeScanner() {
           )}
         </div>
 
-        <div style={{background:"white",borderRadius:12,padding:20,boxShadow:"0 1px 3px rgba(0,0,0,0.1)"}}>
+        <div style={{background: "transparent",borderRadius:12,padding:20,boxShadow:"0 1px 3px rgba(0,0,0,0.1)"}}>
           <h3 style={{marginBottom:15,fontWeight:"bold"}}>📋 Scan History ({history.length})</h3>
           {history.length===0 && <div style={{color:"#666",fontSize:13}}>No scans yet. Start scanning to see history.</div>}
           {history.map(h=>(
