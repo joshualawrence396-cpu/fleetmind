@@ -39,7 +39,7 @@ export async function POST(request: Request) {
     const paramStr = Object.entries(filteredData)
       .map(([k, v]) => `${k}=${encodeURIComponent(String(v).trim()).replace(/%20/g, "+")}`)
       .join("&")
-    const sigStr = paramStr
+    const sigStr = passphrase ? `${paramStr}&passphrase=${encodeURIComponent(passphrase.trim())}` : paramStr
     filteredData.signature = crypto.createHash("md5").update(sigStr).digest("hex")
 
     const basePayFast = isSandbox ? "https://sandbox.payfast.co.za/eng/process" : "https://www.payfast.co.za/eng/process"
