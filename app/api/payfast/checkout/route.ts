@@ -55,7 +55,16 @@ export async function POST(request: Request) {
 
     const basePayFast = isSandbox ? "https://sandbox.payfast.co.za/eng/process" : "https://www.payfast.co.za/eng/process"
     const qs = Object.entries(filteredData).map(([k, v]) => `${k}=${encodeURIComponent(v)}`).join("&")
-    return NextResponse.json({ url: `${basePayFast}?${qs}`, amount, plan, sandbox: isSandbox })
+    const url = `${basePayFast}?${qs}`
+
+console.log("PAYFAST_URL:", url)
+
+return NextResponse.json({
+  url,
+  amount,
+  plan,
+  sandbox: isSandbox
+})
   } catch (e: any) {
     return NextResponse.json({ error: e.message }, { status: 500 })
   }
