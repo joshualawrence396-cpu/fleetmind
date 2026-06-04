@@ -19,6 +19,10 @@ export async function POST(request: Request) {
     const merchantId   = process.env.PAYFAST_MERCHANT_ID  || "10000100"
     const merchantKey  = process.env.PAYFAST_MERCHANT_KEY || "46f0cd694581a"
     const passphrase   = process.env.PAYFAST_PASSPHRASE   || ""
+
+    console.log("PAYFAST_MERCHANT_ID:", merchantId)
+    console.log("PAYFAST_MERCHANT_KEY:", merchantKey)
+    console.log("PAYFAST_PASSPHRASE:", passphrase)
     const isSandbox    = (process.env.NEXT_PUBLIC_PAYFAST_ENV || "sandbox") !== "production"
     const baseUrl      = process.env.NEXTAUTH_URL || "http://localhost:3000"
     const amount       = (planData.amount * Math.max(1, vehicles)).toFixed(2)
@@ -66,6 +70,7 @@ return NextResponse.json({
     return NextResponse.json({ error: e.message }, { status: 500 })
   }
 }
+
 
 
 
