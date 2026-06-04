@@ -22,6 +22,7 @@ export async function POST(request: Request) {
 
     console.log("PAYFAST_MERCHANT_ID:", merchantId)
     console.log("PAYFAST_MERCHANT_KEY:", merchantKey)
+    console.log("PAYFAST_MERCHANT_KEY_LENGTH:", merchantKey.length)
     console.log("PAYFAST_PASSPHRASE:", passphrase)
     const isSandbox    = (process.env.NEXT_PUBLIC_PAYFAST_ENV || "sandbox") !== "production"
     const baseUrl      = process.env.NEXTAUTH_URL || "http://localhost:3000"
@@ -70,6 +71,7 @@ return NextResponse.json({
     return NextResponse.json({ error: e.message }, { status: 500 })
   }
 }
+
 
 
 
