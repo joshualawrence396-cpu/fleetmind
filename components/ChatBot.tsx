@@ -45,7 +45,7 @@ export function ChatBot({ context = "sales" }: { context?: "sales" | "dashboard"
     if (open) {
       setTimeout(() => inputRef.current?.focus(), 300)
       // Check if CF AI is configured
-      fetch("/api/chat").then(r => r.json()).then(d => setConfigured(d.configured)).catch(() => {})
+      fetch("/api/agents/cloudflare").then(r => r.json()).then(d => setConfigured(d.configured)).catch(() => {})
     }
   }, [open])
 
@@ -59,7 +59,7 @@ export function ChatBot({ context = "sales" }: { context?: "sales" | "dashboard"
     setLoading(true)
 
     try {
-      const res = await fetch("/api/chat", {
+      const res = await fetch("/api/agents/cloudflare", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
