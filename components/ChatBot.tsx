@@ -45,7 +45,7 @@ export function ChatBot({ context = "sales" }: { context?: "sales" | "dashboard"
     if (open) {
       setTimeout(() => inputRef.current?.focus(), 300)
       // Check if CF AI is configured
-      fetch("/api/agents/cloudflare").then(r => r.json()).then(d => setConfigured(d.configured)).catch(() => {})
+      setConfigured(true)
     }
   }, [open])
 
@@ -63,13 +63,16 @@ export function ChatBot({ context = "sales" }: { context?: "sales" | "dashboard"
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          message: text,
-          history: messages.map(m => ({ role: m.role, content: m.content })),
-          context
-        })
+            agent: "support",
+            payload: {
+              message: text,
+              history: messages.map(m => ({ role: m.role, content: m.content })),
+              context
+            }
+          })
       })
       const data = await res.json()
-      const response = data.response || "Sorry, I could not respond. Please email sales@fleetmind.co.za"
+      const response = data.reply || data.response || "Sorry, I could not respond. Please email sales@fleetmind.co.za"
       setMessages(prev => [...prev, { role: "assistant", content: response, time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) }])
     } catch {
       setMessages(prev => [...prev, { role: "assistant", content: "Connection error. Please email sales@fleetmind.co.za for help!", time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) }])
@@ -223,3 +226,7 @@ export function ChatBot({ context = "sales" }: { context?: "sales" | "dashboard"
     </>
   )
 }
+
+
+
+
