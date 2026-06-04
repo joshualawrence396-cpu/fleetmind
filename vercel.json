@@ -2,21 +2,10 @@
   "framework": "nextjs",
   "buildCommand": "npx prisma generate && npm run build",
   "installCommand": "npm install",
-  "env": {
-    "DATABASE_URL": "@database_url",
-    "NEXTAUTH_SECRET": "@nextauth_secret",
-    "NEXTAUTH_URL": "@nextauth_url",
-    "RESEND_API_KEY": "@resend_api_key",
-    "CLOUDFLARE_ACCOUNT_ID": "@cloudflare_account_id",
-    "CLOUDFLARE_API_TOKEN": "@cloudflare_api_token",
-    "PAYFAST_MERCHANT_ID": "@payfast_merchant_id",
-    "PAYFAST_MERCHANT_KEY": "@payfast_merchant_key",
-    "UPSTASH_REDIS_REST_URL": "@upstash_redis_rest_url",
-    "UPSTASH_REDIS_REST_TOKEN": "@upstash_redis_rest_token",
-    "ML_SERVICE_URL": "@ml_service_url"
-  },
   "regions": ["fra1"],
   "functions": {
-    "app/api/**": { "maxDuration": 30 }
+    "app/api/**": {
+      "maxDuration": 30
+    }
   }
 }
