@@ -8,7 +8,7 @@ const CF_API_TOKEN = process.env.CLOUDFLARE_API_TOKEN || ""
 
 // Available free models
 export const CF_MODELS = {
-  fast: "@cf/meta/llama-3-8b-instruct",        // General purpose - fast
+  fast: "@cf/meta/llama-3.1-8b-instruct",        // General purpose - fast
   code: "@cf/meta/codellama-7b-instruct-awq",   // Code generation
   embed: "@cf/baai/bge-small-en-v1.5",          // Embeddings
   sql: "@cf/defog/sqlcoder-7b-2",               // SQL generation
