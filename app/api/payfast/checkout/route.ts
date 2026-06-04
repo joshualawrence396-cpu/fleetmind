@@ -29,21 +29,10 @@ export async function POST(request: Request) {
     const amount       = (planData.amount * Math.max(1, vehicles)).toFixed(2)
 
     const data: Record<string, string> = {
-      merchant_id:   merchantId,
-      merchant_key:  merchantKey,
-      return_url:    `${baseUrl}/dashboard?upgraded=true&plan=${plan}`,
-      cancel_url:    `${baseUrl}/login?cancelled=true`,
-      notify_url:    `${baseUrl}/api/payfast/webhook`,
-      name_first:    (name || "Customer").split(" ")[0],
-      name_last:     (name || "Customer").split(" ").slice(1).join(" ") || "User",
-      email_address: email || "",
-      m_payment_id:  `FM-${userId || "guest"}-${Date.now()}`,
+      merchant_id: merchantId,
+      merchant_key: merchantKey,
       amount,
-      item_name:     `${planData.name} (${vehicles} vehicle${vehicles > 1 ? "s" : ""})`,
-      item_description: planData.description,
-      custom_str1:   userId || "",
-      custom_str2:   plan,
-      custom_int1:   vehicles.toString(),
+      item_name: planData.name,
     }
 
     const filteredData = Object.fromEntries(Object.entries(data).filter(([_, v]) => v !== ""))
@@ -71,6 +60,7 @@ return NextResponse.json({
     return NextResponse.json({ error: e.message }, { status: 500 })
   }
 }
+
 
 
 
