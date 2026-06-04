@@ -10,6 +10,20 @@ export async function POST(request: Request) {
     const start = Date.now()
     let result: any = {}
 
+    if (!agent) {
+      const response = await cloudflareAI(
+        payload?.message || "Hello",
+        "You are FleetMind AI. You help users with fleet management, logistics, routing, inventory, pricing, and general business questions. Respond naturally like ChatGPT."
+      )
+
+      return NextResponse.json({
+        success: true,
+        reply: response,
+        provider: "cloudflare"
+      })
+    }
+
+
     if (agent === "dispatcher") {
       const order = payload.orderId ? await prisma.order.findUnique({
         where: { id: payload.orderId }, include: { driver: true, vehicle: true }
