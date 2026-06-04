@@ -1,41 +1,52 @@
 ﻿// Telematics device adapters for Geotab, Samsara, Cartrack
+
 export interface TelematicsEvent {
-  deviceId: string;
-  vehicleId: string;
-  timestamp: Date;
-  latitude: number;
-  longitude: number;
-  speed: number;
-  heading: number;
-  ignition: boolean;
-  fuelLevel: number;
-  odometer: number;
-  engineRpm?: number;
-  rawData?: any;
+  deviceId: string
+  vehicleId: string
+  timestamp: Date
+  latitude: number
+  longitude: number
+  speed: number
+  heading: number
+  ignition: boolean
+  fuelLevel: number
+  odometer: number
+  engineRpm?: number
+  rawData?: any
 }
 
 export interface TelematicsAlert {
-  type: 'HARSH_BRAKING' | 'SPEEDING' | 'IDLING' | 'UNAUTHORIZED_USE' | 'CRASH' | 'LOW_FUEL';
-  severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
-  message: string;
-  timestamp: Date;
-  location: { lat: number; lng: number };
+  type:
+    | 'HARSH_BRAKING'
+    | 'SPEEDING'
+    | 'IDLING'
+    | 'UNAUTHORIZED_USE'
+    | 'CRASH'
+    | 'LOW_FUEL'
+  severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL'
+  message: string
+  timestamp: Date
+  location: {
+    lat: number
+    lng: number
+  }
 }
 
 // Base adapter class
 export abstract class TelematicsAdapter {
-  abstract name: string;
-  abstract parseEvent(rawData: any): TelematicsEvent;
-  abstract checkAlerts(event: TelematicsEvent): TelematicsAlert[];
+  abstract name: string
+  abstract parseEvent(rawData: any): TelematicsEvent
+  abstract checkAlerts(event: TelematicsEvent): TelematicsAlert[]
+
   async sendCommand(deviceId: string, command: string): Promise<any> {
-    throw new Error('Not implemented');
+    throw new Error('Not implemented')
   }
 }
 
 // Geotab adapter
 export class GeotabAdapter extends TelematicsAdapter {
-  name = 'Geotab';
-  
+  name = 'Geotab'
+
   parseEvent(rawData: any): TelematicsEvent {
     return {
       deviceId: rawData.device?.id || rawData.vehicleId,
@@ -50,40 +61,46 @@ export class GeotabAdapter extends TelematicsAdapter {
       odometer: rawData.odometer,
       engineRpm: rawData.engineRpm,
       rawData
-    };
+    }
   }
-  
+
   checkAlerts(event: TelematicsEvent): TelematicsAlert[] {
-    const alerts: TelematicsAlert[] = [];
-    
+    const alerts: TelematicsAlert[] = []
+
     if (event.speed > 80) {
       alerts.push({
         type: 'SPEEDING',
         severity: 'HIGH',
-        message: Vehicle speeding at  km/h,
+        message: `Vehicle speeding at ${event.speed} km/h`,
         timestamp: event.timestamp,
-        location: { lat: event.latitude, lng: event.longitude }
-      });
+        location: {
+          lat: event.latitude,
+          lng: event.longitude
+        }
+      })
     }
-    
+
     if (event.fuelLevel < 15) {
       alerts.push({
         type: 'LOW_FUEL',
         severity: 'MEDIUM',
-        message: Low fuel level: %,
+        message: `Low fuel level: ${event.fuelLevel}%`,
         timestamp: event.timestamp,
-        location: { lat: event.latitude, lng: event.longitude }
-      });
+        location: {
+          lat: event.latitude,
+          lng: event.longitude
+        }
+      })
     }
-    
-    return alerts;
+
+    return alerts
   }
 }
 
 // Samsara adapter
 export class SamsaraAdapter extends TelematicsAdapter {
-  name = 'Samsara';
-  
+  name = 'Samsara'
+
   parseEvent(rawData: any): TelematicsEvent {
     return {
       deviceId: rawData.deviceId,
@@ -97,30 +114,33 @@ export class SamsaraAdapter extends TelematicsAdapter {
       fuelLevel: rawData.fuel?.percent || 0,
       odometer: rawData.engine?.odometer,
       rawData
-    };
+    }
   }
-  
+
   checkAlerts(event: TelematicsEvent): TelematicsAlert[] {
-    const alerts: TelematicsAlert[] = [];
-    
+    const alerts: TelematicsAlert[] = []
+
     if (event.speed > 100) {
       alerts.push({
         type: 'SPEEDING',
         severity: 'HIGH',
-        message: Vehicle speeding at  km/h,
+        message: `Vehicle speeding at ${event.speed} km/h`,
         timestamp: event.timestamp,
-        location: { lat: event.latitude, lng: event.longitude }
-      });
+        location: {
+          lat: event.latitude,
+          lng: event.longitude
+        }
+      })
     }
-    
-    return alerts;
+
+    return alerts
   }
 }
 
-// Cartrack adapter (South Africa specific)
+// Cartrack adapter
 export class CartrackAdapter extends TelematicsAdapter {
-  name = 'Cartrack';
-  
+  name = 'Cartrack'
+
   parseEvent(rawData: any): TelematicsEvent {
     return {
       deviceId: rawData.device_id,
@@ -134,24 +154,26 @@ export class CartrackAdapter extends TelematicsAdapter {
       fuelLevel: rawData.fuel_level || 0,
       odometer: rawData.odometer,
       rawData
-    };
+    }
   }
-  
+
   checkAlerts(event: TelematicsEvent): TelematicsAlert[] {
-    const alerts: TelematicsAlert[] = [];
-    
-    // Check for harsh braking
+    const alerts: TelematicsAlert[] = []
+
     if (event.rawData?.harsh_braking) {
       alerts.push({
         type: 'HARSH_BRAKING',
         severity: 'MEDIUM',
         message: 'Harsh braking detected',
         timestamp: event.timestamp,
-        location: { lat: event.latitude, lng: event.longitude }
-      });
+        location: {
+          lat: event.latitude,
+          lng: event.longitude
+        }
+      })
     }
-    
-    return alerts;
+
+    return alerts
   }
 }
 
@@ -159,4 +181,4 @@ export const telematicsAdapters = {
   geotab: new GeotabAdapter(),
   samsara: new SamsaraAdapter(),
   cartrack: new CartrackAdapter()
-};
+}

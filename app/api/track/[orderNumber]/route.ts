@@ -1,23 +1,43 @@
-import { NextResponse } from "next/server"
-import { PrismaClient } from "@prisma/client"
+import { NextRequest, NextResponse } from 'next/server'
+import { PrismaClient } from '@prisma/client'
+
 const prisma = new PrismaClient()
 
-export async function GET(request, { params }) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ orderNumber: string }> }
+) {
   try {
+    const { orderNumber } = await params
+
     const order = await prisma.order.findUnique({
-      where: { orderNumber: params.orderNumber },
-      include: { driver: true, vehicle: true }
+      where: {
+        orderNumber
+      },
+      include: {
+        driver: true,
+        vehicle: true,
+        stops: true
+      }
     })
-    if (!order) return NextResponse.json({ error: "Order not found" }, { status: 404 })
-    return NextResponse.json({
-      orderNumber: order.orderNumber, status: order.status,
-      customerName: order.customerName, deliveryAddress: order.deliveryAddress,
-      priority: order.priority, completedAt: order.completedAt,
-      driver: order.driver ? { name: order.driver.name, phone: order.driver.phone } : null,
-      vehicle: order.vehicle ? { registration: order.vehicle.registration } : null,
-      createdAt: order.createdAt, updatedAt: order.updatedAt
-    })
+
+    if (!order) {
+      return NextResponse.json(
+        { error: 'Order not found' },
+        { status: 404 }
+      )
+    }
+
+    return NextResponse.json(order)
   } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json(
+      {
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Unknown error'
+      },
+      { status: 500 }
+    )
   }
 }

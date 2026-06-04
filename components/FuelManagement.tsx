@@ -3,9 +3,9 @@ import { useState, useEffect } from "react"
 import { Fuel, Plus, TrendingDown } from "lucide-react"
 
 export function FuelManagement() {
-  const [logs, setLogs] = useState([])
-  const [vehicles, setVehicles] = useState([])
-  const [drivers, setDrivers] = useState([])
+  const [logs, setLogs] = useState<any[]>([])
+  const [vehicles, setVehicles] = useState<any[]>([])
+  const [drivers, setDrivers] = useState<any[]>([])
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState({ vehicleId:"", driverId:"", litres:"", costPerLitre:"", station:"", date: new Date().toISOString().split("T")[0] })
   const [loading, setLoading] = useState(false)
@@ -22,7 +22,7 @@ export function FuelManagement() {
     const res = await fetch("/api/fuel", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(form) })
     if (res.ok) {
       const entry = await res.json()
-      setLogs([entry, ...logs])
+      setLogs((prev: any[]) => [entry, ...prev])
       setShowForm(false)
       setForm({ vehicleId:"", driverId:"", litres:"", costPerLitre:"", station:"", date: new Date().toISOString().split("T")[0] })
     }

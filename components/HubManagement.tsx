@@ -5,7 +5,7 @@ import { MapPin, Plus, Truck, Building } from "lucide-react"
 const HUB_TYPES = ["DEPOT", "CROSS_DOCK", "SORTATION", "FULFILLMENT_CENTER", "MICRO_FULFILLMENT", "LOCKER"]
 
 export function HubManagement() {
-  const [hubs, setHubs] = useState([])
+  const [hubs, setHubs] = useState<any[]>([])
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState({ name: "", code: "", type: "DEPOT", address: "", latitude: "-33.9249", longitude: "18.4241" })
   const [loading, setLoading] = useState(false)
@@ -15,7 +15,7 @@ export function HubManagement() {
   const createHub = async () => {
     setLoading(true)
     const res = await fetch("/api/hubs", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(form) })
-    if (res.ok) { const h = await res.json(); setHubs([h, ...hubs]); setShowForm(false); setForm({ name: "", code: "", type: "DEPOT", address: "", latitude: "-33.9249", longitude: "18.4241" }) }
+    if (res.ok) { const h = await res.json(); setHubs((prev:any[]) => [h, ...prev]); setShowForm(false); setForm({ name: "", code: "", type: "DEPOT", address: "", latitude: "-33.9249", longitude: "18.4241" }) }
     setLoading(false)
   }
 

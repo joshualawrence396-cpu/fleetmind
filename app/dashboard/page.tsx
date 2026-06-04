@@ -1,4 +1,5 @@
 "use client"
+type Lang = "en" | "af"
 import { useSession, signOut } from "next-auth/react"
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
@@ -29,7 +30,7 @@ const FORM_WRAP: any = { background: "rgba(99,102,241,0.05)", borderRadius: 14, 
 
 // ── GEOFENCING ────────────────────────────────────────────────
 function GeofencingPanel() {
-  const [geofences, setGeofences] = useState([])
+  const [geofences, setGeofences] = useState<any[]>([])
   const [form, setForm] = useState({ name: "", centerLat: "-33.9249", centerLng: "18.4241", radiusKm: "1" })
   const [loading, setLoading] = useState(false)
   useEffect(() => { fetch("/api/geofences").then(r => r.json()).then(d => setGeofences(Array.isArray(d) ? d : [])) }, [])
@@ -70,8 +71,8 @@ function GeofencingPanel() {
 
 // ── RETURNS ───────────────────────────────────────────────────
 function ReturnsPanel() {
-  const [returns, setReturns] = useState([])
-  const [orders, setOrders] = useState([])
+  const [returns, setReturns] = useState<any[]>([])
+  const [orders, setOrders] = useState<any[]>([])
   const [form, setForm] = useState({ orderId: "", reason: "FAILED_DELIVERY", condition: "GOOD", notes: "", refundAmount: "" })
   const [loading, setLoading] = useState(false)
   useEffect(() => {
@@ -221,7 +222,7 @@ function MLMaintenancePanel() {
 
 // ── WAREHOUSES ────────────────────────────────────────────────
 function WarehousesPanel() {
-  const [items, setItems] = useState([])
+  const [items, setItems] = useState<any[]>([])
   const [form, setForm] = useState({ name: "", address: "", city: "", capacity: "" })
   const [loading, setLoading] = useState(false)
   useEffect(() => { fetch("/api/warehouses").then(r => r.json()).then(d => setItems(Array.isArray(d) ? d : [])) }, [])
@@ -260,8 +261,8 @@ function WarehousesPanel() {
 
 // ── INVENTORY ─────────────────────────────────────────────────
 function InventoryPanel() {
-  const [items, setItems] = useState([])
-  const [warehouses, setWarehouses] = useState([])
+  const [items, setItems] = useState<any[]>([])
+  const [warehouses, setWarehouses] = useState<any[]>([])
   const [form, setForm] = useState({ name: "", sku: "", quantity: "", unitPrice: "", minStock: "", warehouseId: "" })
   const [loading, setLoading] = useState(false)
   useEffect(() => {
@@ -360,8 +361,8 @@ function BarcodePanel() {
 
 // ── FUEL ──────────────────────────────────────────────────────
 function FuelPanel() {
-  const [entries, setEntries] = useState([])
-  const [vehicles, setVehicles] = useState([])
+  const [entries, setEntries] = useState<any[]>([])
+  const [vehicles, setVehicles] = useState<any[]>([])
   const [form, setForm] = useState({ vehicleId: "", litres: "", totalCost: "", odometer: "", station: "" })
   const [loading, setLoading] = useState(false)
   useEffect(() => {
@@ -419,8 +420,8 @@ function FuelPanel() {
 
 // ── MAINTENANCE ───────────────────────────────────────────────
 function MaintenancePanel() {
-  const [records, setRecords] = useState([])
-  const [vehicles, setVehicles] = useState([])
+  const [records, setRecords] = useState<any[]>([])
+  const [vehicles, setVehicles] = useState<any[]>([])
   const [form, setForm] = useState({ vehicleId: "", type: "SERVICE", description: "", cost: "", performedBy: "" })
   const [loading, setLoading] = useState(false)
   useEffect(() => {
@@ -474,7 +475,7 @@ function MaintenancePanel() {
 
 // ── INVOICES ──────────────────────────────────────────────────
 function InvoicesPanel() {
-  const [orders, setOrders] = useState([])
+  const [orders, setOrders] = useState<any[]>([])
   useEffect(() => { fetch("/api/orders").then(r => r.json()).then(d => setOrders(Array.isArray(d) ? d.filter((o: any) => o.status === "COMPLETED") : [])) }, [])
   const total = orders.reduce((s: number, o: any) => s + (o.totalAmount || 1500), 0)
   const print = (o: any) => {
@@ -553,7 +554,7 @@ function CostAnalysisPanel() {
 
 // ── HUBS ──────────────────────────────────────────────────────
 function HubsPanel() {
-  const [hubs, setHubs] = useState([])
+  const [hubs, setHubs] = useState<any[]>([])
   const [form, setForm] = useState({ name: "", address: "", city: "", latitude: "-33.9249", longitude: "18.4241", type: "DEPOT" })
   const [loading, setLoading] = useState(false)
   useEffect(() => { fetch("/api/hubs").then(r => r.json()).then(d => setHubs(Array.isArray(d) ? d : [])) }, [])
@@ -598,9 +599,9 @@ function HubsPanel() {
 
 // ── ROUTE OPTIMIZER ───────────────────────────────────────────
 function RouteOptimizerPanel({ optimizeRoutes, optimizing, optimizeResult }: { optimizeRoutes: any, optimizing: boolean, optimizeResult: any }) {
-  const [routes, setRoutes] = useState([])
-  const [orders, setOrders] = useState([])
-  const [vehicles, setVehicles] = useState([])
+  const [routes, setRoutes] = useState<any[]>([])
+  const [orders, setOrders] = useState<any[]>([])
+  const [vehicles, setVehicles] = useState<any[]>([])
   useEffect(() => {
     fetch("/api/routes").then(r => r.json()).then(d => setRoutes(Array.isArray(d) ? d : []))
     fetch("/api/orders").then(r => r.json()).then(d => setOrders(Array.isArray(d) ? d : []))
@@ -639,8 +640,8 @@ function RouteOptimizerPanel({ optimizeRoutes, optimizing, optimizeResult }: { o
 
 // ── TELEMATICS ────────────────────────────────────────────────
 function TelematicsPanel() {
-  const [alerts, setAlerts] = useState([])
-  const [vehicles, setVehicles] = useState([])
+  const [alerts, setAlerts] = useState<any[]>([])
+  const [vehicles, setVehicles] = useState<any[]>([])
   const [simulating, setSimulating] = useState(false)
   useEffect(() => {
     fetch("/api/telematics/alerts").then(r => r.json()).then(d => setAlerts(Array.isArray(d) ? d : []))
@@ -682,8 +683,8 @@ function TelematicsPanel() {
 
 // ── COURIER ───────────────────────────────────────────────────
 function CourierPanel() {
-  const [rates, setRates] = useState([])
-  const [bookings, setBookings] = useState([])
+  const [rates, setRates] = useState<any[]>([])
+  const [bookings, setBookings] = useState<any[]>([])
   const [form, setForm] = useState({ fromCity: "Cape Town", toCity: "Johannesburg", weightKg: "5" })
   const [loading, setLoading] = useState(false)
   useEffect(() => { fetch("/api/couriers/bookings").then(r => r.json()).then(d => setBookings(Array.isArray(d) ? d : [])) }, [])
@@ -735,10 +736,10 @@ function CourierPanel() {
 
 // ── AI AGENTS ─────────────────────────────────────────────────
 function AIAgentsPanel() {
-  const [runs, setRuns] = useState([])
+  const [runs, setRuns] = useState<any[]>([])
   const [running, setRunning] = useState(null)
   const [result, setResult] = useState(null)
-  const [orders, setOrders] = useState([])
+  const [orders, setOrders] = useState<any[]>([])
   const [selectedOrder, setSelectedOrder] = useState("")
   const [issue, setIssue] = useState("")
   useEffect(() => {
@@ -804,8 +805,8 @@ function AIAgentsPanel() {
 
 // ── NOTIFICATIONS ─────────────────────────────────────────────
 function NotificationsPanel() {
-  const [notifications, setNotifications] = useState([])
-  const [orders, setOrders] = useState([])
+  const [notifications, setNotifications] = useState<any[]>([])
+  const [orders, setOrders] = useState<any[]>([])
   const [form, setForm] = useState({ orderId: "", type: "ORDER_DISPATCHED", recipient: "" })
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState(null)
@@ -931,7 +932,7 @@ function TestingPanel() {
       {tests.map(t => {
         const r = (results as any)[t.id]
         return (
-          <div key={t.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 16px", ...card(), marginBottom: 8 }}>
+          <div key={t.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", ...card(), marginBottom: 8 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", background: "rgba(16,185,129,0.15)", color: "#34d399", borderRadius: 4 }}>GET</span>
               <span style={{ fontSize: 13, color: "#a5b4fc" }}>{t.name}</span>
@@ -953,7 +954,7 @@ function TestingPanel() {
 
 // ── MONITORING ────────────────────────────────────────────────
 function MonitoringPanel() {
-  const [history, setHistory] = useState([])
+  const [history, setHistory] = useState<any[]>([])
   const [avg, setAvg] = useState(0)
   const [loading, setLoading] = useState(false)
   const check = async () => {
@@ -997,7 +998,7 @@ function MonitoringPanel() {
 
 // ── POD ───────────────────────────────────────────────────────
 function PODPanel() {
-  const [orders, setOrders] = useState([])
+  const [orders, setOrders] = useState<any[]>([])
   const [selected, setSelected] = useState("")
   const [notes, setNotes] = useState("")
   const [loading, setLoading] = useState(false)
@@ -1253,9 +1254,9 @@ export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState("dashboard")
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [stats, setStats] = useState({ vehicles: 0, drivers: 0, orders: 0, completed: 0, revenue: 0, rate: 0 })
-  const [vehicles, setVehicles] = useState([])
-  const [orders, setOrders] = useState([])
-  const [drivers, setDrivers] = useState([])
+  const [vehicles, setVehicles] = useState<any[]>([])
+  const [orders, setOrders] = useState<any[]>([])
+  const [drivers, setDrivers] = useState<any[]>([])
   const [time, setTime] = useState(new Date())
   const [lang, setLang] = useState<Lang>("en")
   const [loading, setLoading] = useState(true)
@@ -1263,7 +1264,7 @@ export default function DashboardPage() {
   const [orderForm, setOrderForm] = useState({ customerName: "", customerEmail: "", customerPhone: "", deliveryAddress: "", pickupAddress: "", priority: "NORMAL" })
   const [optimizing, setOptimizing] = useState(false)
   const [showAddDriver, setShowAddDriver] = useState(false)
-  const [driverForm, setDriverForm] = useState({ name: "", email: "", phone: "", licenseNumber: "", licenseType: "CODE10" })
+  const [driverForm, setDriverForm] = useState({ name: "", email: "", phone: "", licenseNumber: "", licenseType: "CODE10", vehicleId: "" })
   const [optimizeResult, setOptimizeResult] = useState(null)
   const user = session?.user as any
   const inp: any = { width: "100%", padding: "10px 14px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(99,102,241,0.2)", borderRadius: 10, fontSize: 14, color: "#e2e8f0", outline: "none", boxSizing: "border-box" as const, marginBottom: 12, fontFamily: "system-ui" }
@@ -1284,13 +1285,13 @@ export default function DashboardPage() {
     setLoading(false)
   }
 
-  const createDriver = async (e: any) => {
+  const createDriver = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     const res = await fetch("/api/drivers", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(driverForm) })
-    if (res.ok) { loadData(); setShowAddDriver(false); setDriverForm({ name: "", email: "", phone: "", licenseNumber: "", licenseType: "CODE10" }) }
+    if (res.ok) { loadData(); setShowAddDriver(false); setDriverForm({ name: "", email: "", phone: "", licenseNumber: "", licenseType: "CODE10", vehicleId: "" }) }
   }
 
-  const createOrder = async (e: any) => {
+  const createOrder = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     const res = await fetch("/api/orders", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(orderForm) })
     if (res.ok) { loadData(); setShowNewOrder(false); setOrderForm({ customerName: "", customerEmail: "", customerPhone: "", deliveryAddress: "", pickupAddress: "", priority: "NORMAL" }) }
@@ -1360,7 +1361,7 @@ export default function DashboardPage() {
             <div style={{ fontSize: 18, fontWeight: 800, color: "white", letterSpacing: "-0.5px" }}>{activeTab.replace(/-/g, " ")}</div>
             <div style={{ fontSize: 12, color: "#475569" }}>{t("welcome", lang)}, {user?.name} — {time.toLocaleTimeString()}</div>
           </div>
-          <select value={lang} onChange={e => setLang(e.target.value)} style={{ padding: "6px 12px", background: "rgba(99,102,241,0.1)", border: "1px solid rgba(99,102,241,0.2)", borderRadius: 8, color: "#a5b4fc", fontSize: 12, cursor: "pointer", outline: "none" }}>
+          <select value={lang} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setLang(e.target.value as Lang)} style={{ padding: "6px 12px", background: "rgba(99,102,241,0.1)", border: "1px solid rgba(99,102,241,0.2)", borderRadius: 8, color: "#a5b4fc", fontSize: 12, cursor: "pointer", outline: "none" }}>
             <option value="en">🇿🇦 English</option><option value="af">🇿🇦 Afrikaans</option><option value="zu">🇿🇦 Zulu</option><option value="xh">🇿🇦 Xhosa</option>
           </select>
           <button onClick={() => setShowAddDriver(true)} style={{ padding: "8px 16px", background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.3)", borderRadius: 9, color: "#34d399", cursor: "pointer", fontSize: 13, fontWeight: 600, display: "flex", alignItems: "center", gap: 6, marginRight: -8 }}>
@@ -1550,7 +1551,7 @@ export default function DashboardPage() {
                     <span style={{ fontSize: 12, color: "#e2e8f0" }}>{o.customerName}</span>
                     <span style={{ fontSize: 11, color: "#475569" }}>{o.deliveryAddress?.substring(0, 22)}...</span>
                     <span style={{ padding: "2px 8px", borderRadius: 6, fontSize: 10, fontWeight: 600, background: o.status === "COMPLETED" ? "rgba(16,185,129,0.15)" : o.status === "IN_PROGRESS" ? "rgba(99,102,241,0.15)" : "rgba(245,158,11,0.15)", color: o.status === "COMPLETED" ? "#34d399" : o.status === "IN_PROGRESS" ? "#a5b4fc" : "#fbbf24", display: "inline-block" }}>{o.status}</span>
-                    <select onChange={async e => { await fetch(`/api/orders/${o.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status: e.target.value }) }); loadData() }} value={o.status} style={{ padding: "4px 8px", background: "rgba(99,102,241,0.08)", border: "1px solid rgba(99,102,241,0.2)", borderRadius: 6, color: "#a5b4fc", fontSize: 11, cursor: "pointer" }}>
+                    <select onChange={async (e: React.ChangeEvent<HTMLSelectElement>) => { await fetch(`/api/orders/${o.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status: e.target.value }) }); loadData() }} value={o.status} style={{ padding: "4px 8px", background: "rgba(99,102,241,0.08)", border: "1px solid rgba(99,102,241,0.2)", borderRadius: 6, color: "#a5b4fc", fontSize: 11, cursor: "pointer" }}>
                       <option value="PENDING">Pending</option><option value="IN_PROGRESS">In Progress</option><option value="COMPLETED">Completed</option><option value="FAILED">Failed</option>
                     </select>
                   </div>

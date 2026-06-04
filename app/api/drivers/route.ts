@@ -18,7 +18,6 @@ export async function POST(request: Request) {
         phone: body.phone,
         email: body.email || null,
         licenseNumber: body.licenseNumber || "TMP-" + Date.now(),
-        licenseType: body.licenseType || "CODE10",
         status: "ACTIVE",
       },
       include: { vehicle: true }

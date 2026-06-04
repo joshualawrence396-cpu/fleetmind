@@ -1,6 +1,5 @@
-﻿import { Inngest } from 'inngest'
+import { Inngest } from 'inngest'
 import { prisma } from '@/lib/prisma'
-import { sendDeliveryNotification } from '@/lib/notifications/twilio'
 
 export const inngest = new Inngest({
   id: 'fleetmind',
@@ -26,7 +25,7 @@ export const orderWorkflow = inngest.createFunction(
     })
     
     const shipment = await step.run('create-shipment', async () => {
-      const trackingNumber = FM--
+      const trackingNumber = `FM-${Date.now()}`
       return await prisma.shipment.create({
         data: {
           orderId,
@@ -39,7 +38,6 @@ export const orderWorkflow = inngest.createFunction(
     })
     
     await step.run('notify-customer', async () => {
-      await sendDeliveryNotification(
         order?.recipientPhone || '',
         shipment.trackingNumber,
         'CREATED'
@@ -123,7 +121,7 @@ export const maintenanceWorkflow = inngest.createFunction(
           recommendedAction: 'Schedule brake inspection'
         })
         
-        await step.run(create-maintenance-ticket-, async () => {
+        await step.run('create-maintenance-ticket', async () => {
           await prisma.maintenanceRecord.create({
             data: {
               vehicleId: vehicle.id,
@@ -194,3 +192,5 @@ export const demandForecastWorkflow = inngest.createFunction(
     return { forecastDays: forecast.length, avgDailyVolume: avgVolume }
   }
 )
+
+

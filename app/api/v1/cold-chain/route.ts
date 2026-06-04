@@ -3,33 +3,56 @@ import { prisma } from '@/lib/prisma'
 
 export async function POST(req: NextRequest) {
   try {
-    const { shipmentId, temperature, humidity, timestamp } = await req.json()
-    
-    // Store cold chain data
+    const {
+      shipmentId,
+      temperature,
+      humidity,
+      timestamp
+    } = await req.json()
+
+    const isOutOfRange =
+      temperature < -20 || temperature > -10
+
     await prisma.coldChainRecord.create({
       data: {
         shipmentId,
         temperature,
-        humidity,
-        timestamp: new Date(timestamp),
-        isOutOfRange: temperature < -20 || temperature > -10 // Vaccine range
+        humidity: humidity ?? null,
+        timestamp: timestamp
+          ? new Date(timestamp)
+          : new Date(),
+        isOutOfRange
       }
     })
-    
-    // Alert if temperature out of range
-    if (temperature < -20 || temperature > -10) {
+
+    if (isOutOfRange) {
       await prisma.alert.create({
         data: {
           type: 'COLD_CHAIN_BREACH',
           severity: 'HIGH',
           shipmentId,
-          message: Temperature breach: °C (range: -20°C to -10°C)
+          message: `Temperature breach: ${temperature}°C (range: -20°C to -10°C)`
         }
       })
     }
-    
-    return NextResponse.json({ success: true })
+
+    return NextResponse.json({
+      success: true,
+      isOutOfRange
+    })
   } catch (error) {
-    return NextResponse.json({ error: 'Failed to record cold chain data' }, { status: 500 })
+    console.error('Cold chain error:', error)
+
+    return NextResponse.json(
+      {
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Failed to record cold chain data'
+      },
+      {
+        status: 500
+      }
+    )
   }
 }

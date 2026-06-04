@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect } from "react"
+import React, { useState, useEffect } from "react"
 import { Truck, DollarSign, CheckCircle, Package, Globe } from "lucide-react"
 
 const PROVIDERS = [
@@ -12,10 +12,10 @@ const PROVIDERS = [
 ]
 
 export function CourierFederation() {
-  const [accounts, setAccounts] = useState([])
-  const [bookings, setBookings] = useState([])
-  const [rates, setRates] = useState([])
-  const [orders, setOrders] = useState([])
+  const [accounts, setAccounts] = useState<any[]>([])
+  const [bookings, setBookings] = useState<any[]>([])
+  const [rates, setRates] = useState<any[]>([])
+  const [orders, setOrders] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
   const [quoteForm, setQuoteForm] = useState({ orderId: "", weightKg: "1", distanceKm: "50", serviceLevel: "STANDARD" })
   const [bookForm, setBookForm] = useState({ orderId: "", provider: "", price: "" })

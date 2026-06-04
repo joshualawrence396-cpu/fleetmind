@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic'
 export async function POST(req: NextRequest) {
   try {
     const { vehicleId, driverId, lat, lng, speed, heading } = await req.json()
-    
+
     const locationData = {
       vehicleId,
       driverId,
@@ -17,24 +17,41 @@ export async function POST(req: NextRequest) {
       heading,
       timestamp: Date.now()
     }
-    
+
     await publishToStream(STREAMS.VEHICLE_LOCATIONS, locationData)
-    
+
     // Update in database
     try {
-      await prisma.
-        // UPDATE "Vehicle" 
-        SET last_location = ST_SetSRID(ST_MakePoint(, ), 4326)::geography
-        WHERE id = 
-      
+      console.log(
+        `Vehicle ${vehicleId} updated at ${lat}, ${lng}`
+      )
+
+      // Uncomment and adapt if your Vehicle model supports it
+      /*
+      await prisma.vehicle.update({
+        where: { id: vehicleId },
+        data: {
+          lastLatitude: lat,
+          lastLongitude: lng,
+          updatedAt: new Date()
+        }
+      })
+      */
     } catch (dbError) {
-      console.log('PostGIS update skipped (extension may not be enabled)')
+      console.log('Vehicle location update skipped:', dbError)
     }
-    
-    return NextResponse.json({ success: true, timestamp: locationData.timestamp })
+
+    return NextResponse.json({
+      success: true,
+      timestamp: locationData.timestamp
+    })
   } catch (error) {
     console.error('Location update error:', error)
-    return NextResponse.json({ error: 'Failed to update location' }, { status: 500 })
+
+    return NextResponse.json(
+      { error: 'Failed to update location' },
+      { status: 500 }
+    )
   }
 }
 

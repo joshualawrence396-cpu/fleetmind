@@ -6,63 +6,87 @@ import { prisma } from '@/lib/prisma'
 export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData()
+
     const file = formData.get('file') as File
-    const entityType = formData.get('entityType')
-    const entityId = formData.get('entityId')
-    const documentType = formData.get('documentType')
-    
+
     if (!file) {
-      return NextResponse.json({ error: 'No file uploaded' }, { status: 400 })
+      return NextResponse.json(
+        { error: 'No file uploaded' },
+        { status: 400 }
+      )
     }
-    
-    // Create uploads directory if it doesn't exist
+
+    // Ensure uploads directory exists
     const uploadDir = join(process.cwd(), 'public', 'uploads')
-    await mkdir(uploadDir, { recursive: true })
-    
-    // Save file
+
+    await mkdir(uploadDir, {
+      recursive: true
+    })
+
+    // Convert uploaded file to buffer
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
-    const fileName = ${Date.now()}-
-    const filePath = join(uploadDir, fileName)
+
+    // Create unique filename
+    const storedFileName = `${Date.now()}-${file.name}`
+
+    const filePath = join(uploadDir, storedFileName)
+
+    // Save file to disk
     await writeFile(filePath, buffer)
-    
-    // Save to database
+
+    // Save document record to database
     const document = await prisma.document.create({
       data: {
         fileName: file.name,
-        fileUrl: /uploads/,
-        fileSize: file.size,
-        mimeType: file.type,
-        entityType: entityType as string,
-        entityId: entityId as string,
-        documentType: documentType as string,
+        fileUrl: `/uploads/${storedFileName}`,
+        fileType: file.type || null,
         uploadedBy: 'SYSTEM'
       }
     })
-    
-    return NextResponse.json(document, { status: 201 })
+
+    return NextResponse.json(document, {
+      status: 201
+    })
   } catch (error) {
     console.error('Upload error:', error)
-    return NextResponse.json({ error: 'Failed to upload document' }, { status: 500 })
+
+    return NextResponse.json(
+      {
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Failed to upload document'
+      },
+      {
+        status: 500
+      }
+    )
   }
 }
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
-    const { searchParams } = new URL(req.url)
-    const entityType = searchParams.get('entityType')
-    const entityId = searchParams.get('entityId')
-    
     const documents = await prisma.document.findMany({
-      where: {
-        ...(entityType && { entityType }),
-        ...(entityId && { entityId })
-      },
-      orderBy: { createdAt: 'desc' }
+      orderBy: {
+        createdAt: 'desc'
+      }
     })
-    
+
     return NextResponse.json(documents)
   } catch (error) {
-    return NextResponse.json({ error: 'Failed to fetch documents' }, { status: 500 })
+    console.error('Fetch documents error:', error)
+
+    return NextResponse.json(
+      {
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Failed to fetch documents'
+      },
+      {
+        status: 500
+      }
+    )
   }
 }

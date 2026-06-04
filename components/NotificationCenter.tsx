@@ -3,8 +3,8 @@ import { useState, useEffect } from "react"
 import { Bell, Send, CheckCircle, Mail, AlertCircle } from "lucide-react"
 
 export function NotificationCenter() {
-  const [notifications, setNotifications] = useState([])
-  const [orders, setOrders] = useState([])
+  const [notifications, setNotifications] = useState<any[]>([])
+  const [orders, setOrders] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
   const [form, setForm] = useState({ orderId: "", type: "ORDER_DISPATCHED", customMessage: "", recipient: "" })
   const [result, setResult] = useState<any>(null)

@@ -33,13 +33,13 @@ export async function GET(req: NextRequest) {
     
     const stopsWithDetails = await Promise.all(route.stops.map(async (stop) => {
       let customerName = ''
-      if (stop.shipmentId) {
-        const shipment = await prisma.shipment.findUnique({
-          where: { id: stop.shipmentId },
-          include: { order: true }
-        })
-        customerName = shipment?.order?.recipientName || ''
-      }
+      if (stop.orderId) {
+  const order = await prisma.order.findUnique({
+    where: { id: stop.orderId }
+  })
+
+  customerName = order?.customerName || ''
+}
       
       return {
         id: stop.id,

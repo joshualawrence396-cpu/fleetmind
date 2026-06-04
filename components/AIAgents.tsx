@@ -3,10 +3,10 @@ import { useState, useEffect } from "react"
 import { Sparkles, Zap, TrendingUp, Wrench, Users, Map, Clock, CheckCircle } from "lucide-react"
 
 export function AIAgents() {
-  const [runs, setRuns] = useState([])
+  const [runs, setRuns] = useState<any[]>([])
   const [loading, setLoading] = useState<string | null>(null)
   const [results, setResults] = useState<any>({})
-  const [orders, setOrders] = useState([])
+  const [orders, setOrders] = useState<any[]>([])
   const [selectedOrder, setSelectedOrder] = useState("")
   const [issue, setIssue] = useState("")
   const [customerMsg, setCustomerMsg] = useState("")

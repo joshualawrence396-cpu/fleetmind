@@ -377,7 +377,7 @@ export default function HomePage() {
         </div>
       </div>
 
-      <ChatBot context="general" />
+      <ChatBot context="sales" />
     </div>
   )
 }

@@ -3,8 +3,8 @@ import { useState, useEffect } from "react"
 import { Activity, AlertTriangle, CheckCircle, Zap, Wifi, TrendingUp } from "lucide-react"
 
 export function TelematicsPanel() {
-  const [events, setEvents] = useState([])
-  const [alerts, setAlerts] = useState([])
+  const [events, setEvents] = useState<any[]>([])
+  const [alerts, setAlerts] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
   const [simForm, setSimForm] = useState({ vehicleId: "", latitude: "-33.9249", longitude: "18.4241", speedKmh: "60", ignition: true, fuelLevelPct: "75" })
   const [vehicles, setVehicles] = useState([])

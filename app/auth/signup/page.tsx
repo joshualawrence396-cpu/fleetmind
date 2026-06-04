@@ -1,26 +1,35 @@
 ﻿'use client'
 
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { signIn } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
 export default function SignupPage() {
   const router = useRouter()
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: '',
     confirmPassword: ''
   })
+
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value })
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    })
   }
 
-  const handleSignup = async (e) => {
+  const handleSignup = async (
+    e: React.FormEvent<HTMLFormElement>
+  ) => {
     e.preventDefault()
     setLoading(true)
     setError('')
@@ -40,7 +49,9 @@ export default function SignupPage() {
     try {
       const response = await fetch('/api/auth/signup', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json'
+        },
         body: JSON.stringify({
           name: formData.name,
           email: formData.email,
@@ -56,7 +67,7 @@ export default function SignupPage() {
           password: formData.password,
           redirect: false
         })
-        
+
         if (!result?.error) {
           router.push('/fleet-tracker')
         } else {
@@ -65,7 +76,7 @@ export default function SignupPage() {
       } else {
         setError(data.message || 'Signup failed')
       }
-    } catch (error) {
+    } catch {
       setError('Network error')
     } finally {
       setLoading(false)
@@ -119,7 +130,9 @@ export default function SignupPage() {
           </div>
 
           <div style={styles.inputGroup}>
-            <label style={styles.label}>Confirm Password</label>
+            <label style={styles.label}>
+              Confirm Password
+            </label>
             <input
               type="password"
               name="confirmPassword"
@@ -130,17 +143,36 @@ export default function SignupPage() {
             />
           </div>
 
-          {error && <div style={styles.errorMessage}>{error}</div>}
+          {error && (
+            <div style={styles.errorMessage}>
+              {error}
+            </div>
+          )}
 
-          <button type="submit" disabled={loading} style={loading ? styles.buttonDisabled : styles.button}>
-            {loading ? 'Creating Account...' : 'Sign Up'}
+          <button
+            type="submit"
+            disabled={loading}
+            style={
+              loading
+                ? styles.buttonDisabled
+                : styles.button
+            }
+          >
+            {loading
+              ? 'Creating Account...'
+              : 'Sign Up'}
           </button>
         </form>
 
         <div style={styles.footer}>
           <p style={styles.footerText}>
             Already have an account?{' '}
-            <Link href="/auth/login" style={styles.link}>Sign in</Link>
+            <Link
+              href="/auth/login"
+              style={styles.link}
+            >
+              Sign in
+            </Link>
           </p>
         </div>
       </div>
@@ -154,7 +186,8 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+    background:
+      'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
   },
   card: {
     background: 'white',
@@ -162,14 +195,35 @@ const styles = {
     padding: '40px',
     width: '100%',
     maxWidth: '500px',
-    boxShadow: '0 20px 60px rgba(0,0,0,0.3)'
+    boxShadow:
+      '0 20px 60px rgba(0,0,0,0.3)'
   },
-  header: { textAlign: 'center', marginBottom: '30px' },
-  logo: { fontSize: '50px', marginBottom: '10px' },
-  title: { fontSize: '28px', fontWeight: 'bold', color: '#1e293b' },
-  subtitle: { color: '#64748b', marginTop: '8px' },
-  inputGroup: { marginBottom: '20px' },
-  label: { display: 'block', marginBottom: '8px', color: '#334155', fontWeight: '500' },
+  header: {
+    textAlign: 'center' as const,
+    marginBottom: '30px'
+  },
+  logo: {
+    fontSize: '50px',
+    marginBottom: '10px'
+  },
+  title: {
+    fontSize: '28px',
+    fontWeight: 'bold',
+    color: '#1e293b'
+  },
+  subtitle: {
+    color: '#64748b',
+    marginTop: '8px'
+  },
+  inputGroup: {
+    marginBottom: '20px'
+  },
+  label: {
+    display: 'block',
+    marginBottom: '8px',
+    color: '#334155',
+    fontWeight: '500'
+  },
   input: {
     width: '100%',
     padding: '12px',
@@ -208,7 +262,16 @@ const styles = {
     fontWeight: '600',
     cursor: 'not-allowed'
   },
-  footer: { marginTop: '20px', textAlign: 'center' },
-  footerText: { color: '#64748b' },
-  link: { color: '#667eea', textDecoration: 'none', fontWeight: '500' }
+  footer: {
+    marginTop: '20px',
+    textAlign: 'center' as const
+  },
+  footerText: {
+    color: '#64748b'
+  },
+  link: {
+    color: '#667eea',
+    textDecoration: 'none',
+    fontWeight: '500'
+  }
 }

@@ -126,6 +126,9 @@ model Vehicle {
 }
 
 model Driver {
+  lastLatitude       Float?
+  lastLongitude      Float?
+  lastLocationUpdate DateTime?
   id               String    @id @default(cuid())
   carrierId        String?
   userId           String?
@@ -577,3 +580,82 @@ model ReturnOrder {
 
   @@index([carrierId])
 }
+
+model ColdChainRecord {
+  id           String   @id @default(cuid())
+  shipmentId   String
+  temperature  Float
+  humidity     Float?
+  timestamp    DateTime
+  isOutOfRange Boolean  @default(false)
+  createdAt    DateTime @default(now())
+}
+
+model Alert {
+  id         String   @id @default(cuid())
+  type       String
+  severity   String
+  shipmentId String?
+  message    String
+  createdAt  DateTime @default(now())
+}
+
+
+model Document {
+  id         String   @id @default(cuid())
+  fileName   String
+  fileUrl    String
+  fileType   String?
+  uploadedBy String?
+  createdAt  DateTime @default(now())
+}
+
+
+model Feedback {
+  id           String   @id @default(cuid())
+  shipmentId   String?
+  rating       Int
+  comment      String?
+  customerName String?
+  createdAt    DateTime @default(now())
+}
+
+
+
+model MaintenancePrediction {
+  id                String   @id @default(cuid())
+  vehicleId         String
+  component         String
+  riskScore         Float
+  recommendedAction String
+  rationale         String?
+  createdAt         DateTime @default(now())
+}
+
+
+model ReturnRequest {
+  id          String   @id @default(cuid())
+  shipmentId  String?
+  reason      String
+  status      String   @default("PENDING")
+  createdAt   DateTime @default(now())
+}
+
+
+model Shipment {
+  id                  String   @id @default(cuid())
+  carrierId           String?
+  orderId             String?
+  trackingNumber String? @unique
+  serviceLevel        String?
+  weightKg            Float?
+  status              String   @default("CREATED")
+  actualDeliveryAt    DateTime?
+  estimatedDeliveryAt DateTime?
+  parcelCount         Int?     @default(1)
+  externalCarrier     String?
+
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
+

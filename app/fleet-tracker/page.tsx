@@ -1,24 +1,38 @@
-﻿'use client'
+'use client'
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 
+type Vehicle = {
+  id: string
+  registration: string
+  make: string
+  model: string
+  status: string
+  latitude?: number
+  longitude?: number
+}
+
 export default function FleetTracker() {
   const router = useRouter()
-  const [vehicles, setVehicles] = useState([])
-  const [selectedVehicle, setSelectedVehicle] = useState(null)
+
+  const [vehicles, setVehicles] = useState<Vehicle[]>([])
+  const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     checkAuth()
     fetchVehicles()
+
     const interval = setInterval(fetchVehicles, 30000)
+
     return () => clearInterval(interval)
   }, [])
 
   const checkAuth = async () => {
     const res = await fetch('/api/me')
     const data = await res.json()
+
     if (data.error) {
       router.push('/auth/login')
     }
@@ -28,76 +42,127 @@ export default function FleetTracker() {
     try {
       const res = await fetch('/api/vehicles')
       const data = await res.json()
-      setVehicles(data)
+
+      setVehicles(Array.isArray(data) ? data : [])
       setLoading(false)
     } catch (error) {
       console.error('Error fetching vehicles:', error)
+      setLoading(false)
     }
   }
 
-  const openInMaps = (lat, lng) => {
-    if (lat && lng) {
-      window.open(`https://www.google.com/maps?q=${lat},${lng}`, '_blank')
+  const openInMaps = (
+    lat: number | undefined,
+    lng: number | undefined
+  ) => {
+    if (lat !== undefined && lng !== undefined) {
+      window.open(
+        `https://www.google.com/maps?q=${lat},${lng}`,
+        '_blank'
+      )
     }
   }
 
   if (loading) {
-    return <div style={styles.loading}>Loading fleet data...</div>
+    return (
+      <div style={styles.loading}>
+        Loading fleet data...
+      </div>
+    )
   }
 
   return (
     <div style={styles.container}>
       <div style={styles.header}>
         <h1 style={styles.title}>Live Fleet Tracker</h1>
-        <button onClick={() => router.push('/dashboard')} style={styles.backBtn}>
-          ← Back to Dashboard
+
+        <button
+          onClick={() => router.push('/dashboard')}
+          style={styles.backBtn}
+        >
+          Back to Dashboard
         </button>
       </div>
 
       <div style={styles.grid}>
         <div style={styles.mapSection}>
-          <h2 style={styles.sectionTitle}>📍 Vehicle Locations</h2>
+          <h2 style={styles.sectionTitle}>
+            Vehicle Locations
+          </h2>
+
           <div style={styles.mapContainer}>
             <iframe
               title="Fleet Map"
               width="100%"
               height="100%"
               frameBorder="0"
-              src={`https://www.openstreetmap.org/export/embed.html?bbox=18.35,-33.97,18.50,-33.88&layer=mapnik&marker=${selectedVehicle?.latitude || -33.9249},${selectedVehicle?.longitude || 18.4241}`}
+              src={`https://www.openstreetmap.org/export/embed.html?bbox=18.35,-33.97,18.50,-33.88&layer=mapnik&marker=${
+                selectedVehicle?.latitude ?? -33.9249
+              },${
+                selectedVehicle?.longitude ?? 18.4241
+              }`}
             />
           </div>
         </div>
 
         <div style={styles.listSection}>
-          <h2 style={styles.sectionTitle}>Active Fleet ({vehicles.length})</h2>
+          <h2 style={styles.sectionTitle}>
+            Active Fleet ({vehicles.length})
+          </h2>
+
           {vehicles.map((vehicle) => (
             <div
               key={vehicle.id}
               onClick={() => setSelectedVehicle(vehicle)}
               style={{
                 ...styles.vehicleCard,
-                background: selectedVehicle?.id === vehicle.id ? '#eff6ff' : 'white'
+                background:
+                  selectedVehicle?.id === vehicle.id
+                    ? '#eff6ff'
+                    : 'white'
               }}
             >
               <div style={styles.vehicleHeader}>
                 <strong>{vehicle.registration}</strong>
-                <span style={{
-                  ...styles.statusBadge,
-                  background: vehicle.status === 'ON_ROUTE' ? '#dbeafe' : '#d1fae5',
-                  color: vehicle.status === 'ON_ROUTE' ? '#1e40af' : '#065f46'
-                }}>
+
+                <span
+                  style={{
+                    ...styles.statusBadge,
+                    background:
+                      vehicle.status === 'ON_ROUTE'
+                        ? '#dbeafe'
+                        : '#d1fae5',
+                    color:
+                      vehicle.status === 'ON_ROUTE'
+                        ? '#1e40af'
+                        : '#065f46'
+                  }}
+                >
                   {vehicle.status}
                 </span>
               </div>
+
               <div style={styles.vehicleDetails}>
                 {vehicle.make} {vehicle.model}
               </div>
+
               <div style={styles.vehicleLocation}>
-                📍 {vehicle.latitude?.toFixed(4)}, {vehicle.longitude?.toFixed(4)}
+                {vehicle.latitude !== undefined &&
+                vehicle.longitude !== undefined
+                  ? `${vehicle.latitude.toFixed(
+                      4
+                    )}, ${vehicle.longitude.toFixed(4)}`
+                  : 'Location unavailable'}
               </div>
+
               {selectedVehicle?.id === vehicle.id && (
                 <button
-                  onClick={() => openInMaps(vehicle.latitude, vehicle.longitude)}
+                  onClick={() =>
+                    openInMaps(
+                      vehicle.latitude,
+                      vehicle.longitude
+                    )
+                  }
                   style={styles.mapBtn}
                 >
                   Open in Google Maps
@@ -165,7 +230,7 @@ const styles = {
     padding: '20px',
     boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
     maxHeight: '600px',
-    overflowY: 'auto'
+    overflowY: 'auto' as const
   },
   sectionTitle: {
     fontSize: '18px',

@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(request: NextRequest) {
   try {
@@ -9,42 +9,42 @@ export async function GET(request: NextRequest) {
     const metrics = [
       {
         name: 'API Response Time',
-        value: Math.floor(Math.random() * 200) + 100, // 100-300ms
+        value: Math.floor(Math.random() * 200) + 100,
         unit: 'ms',
         status: 'good' as const,
         trend: 'stable' as const
       },
       {
         name: 'Database Query Time',
-        value: Math.floor(Math.random() * 50) + 20, // 20-70ms
+        value: Math.floor(Math.random() * 50) + 20,
         unit: 'ms',
         status: 'good' as const,
         trend: 'down' as const
       },
       {
         name: 'Error Rate',
-        value: Math.floor(Math.random() * 2), // 0-2%
+        value: Math.floor(Math.random() * 2),
         unit: '%',
         status: 'good' as const,
         trend: 'stable' as const
       },
       {
         name: 'Active Users',
-        value: Math.floor(Math.random() * 50) + 20, // 20-70 users
+        value: Math.floor(Math.random() * 50) + 20,
         unit: '',
         status: 'good' as const,
         trend: 'up' as const
       },
       {
         name: 'Memory Usage',
-        value: Math.floor(Math.random() * 30) + 40, // 40-70%
+        value: Math.floor(Math.random() * 30) + 40,
         unit: '%',
         status: 'warning' as const,
         trend: 'up' as const
       },
       {
         name: 'Cache Hit Rate',
-        value: Math.floor(Math.random() * 20) + 80, // 80-100%
+        value: Math.floor(Math.random() * 20) + 80,
         unit: '%',
         status: 'good' as const,
         trend: 'stable' as const
@@ -54,6 +54,14 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(metrics)
   } catch (error) {
     console.error('Performance metrics error:', error)
-    return NextResponse.json({ error: 'Failed to load metrics' }, { status: 500 })
+
+    return NextResponse.json(
+      {
+        error: error instanceof Error
+          ? error.message
+          : 'Unknown error'
+      },
+      { status: 500 }
+    )
   }
 }

@@ -1,16 +1,36 @@
-import { NextResponse } from "next/server"
-import { PrismaClient } from "@prisma/client"
+import { NextRequest, NextResponse } from 'next/server'
+import { PrismaClient } from '@prisma/client'
+
 const prisma = new PrismaClient()
 
-export async function PATCH(request, { params }) {
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
     const body = await request.json()
-    const record = await prisma.maintenanceRecord.update({ where: { id: params.id }, data: { status: body.status }, include: { vehicle: true } })
-    if (body.status === "COMPLETED") {
-      await prisma.vehicle.update({ where: { id: record.vehicleId }, data: { status: "AVAILABLE" } })
-    }
+
+    const { id } = await params
+
+    const record = await prisma.maintenanceRecord.update({
+      where: {
+        id
+      },
+      data: body
+    })
+
     return NextResponse.json(record)
   } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    console.error('Maintenance update error:', error)
+
+    return NextResponse.json(
+      {
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Failed to update maintenance record'
+      },
+      { status: 500 }
+    )
   }
 }

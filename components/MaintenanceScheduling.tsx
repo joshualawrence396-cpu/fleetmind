@@ -3,8 +3,8 @@ import { useState, useEffect } from "react"
 import { Wrench, Plus, CheckCircle, Clock, AlertTriangle } from "lucide-react"
 
 export function MaintenanceScheduling() {
-  const [tasks, setTasks] = useState([])
-  const [vehicles, setVehicles] = useState([])
+  const [tasks, setTasks] = useState<any[]>([])
+  const [vehicles, setVehicles] = useState<any[]>([])
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState({ vehicleId:"", type:"OIL_CHANGE", description:"", scheduledDate:"", priority:"NORMAL", cost:"" })
   const [loading, setLoading] = useState(false)
@@ -27,7 +27,7 @@ export function MaintenanceScheduling() {
     setLoading(false)
   }
 
-  const updateStatus = async (id, status) => {
+  const updateStatus = async (id: string, status: string) => {
     const res = await fetch("/api/maintenance/"+id, { method:"PATCH", headers:{"Content-Type":"application/json"}, body:JSON.stringify({status}) })
     if (res.ok) { const updated = await res.json(); setTasks(tasks.map(t=>t.id===id?updated:t)) }
   }
@@ -94,7 +94,7 @@ export function MaintenanceScheduling() {
 
       <div style={{display:"grid",gap:12}}>
         {tasks.length === 0 && <div style={{padding:40,textAlign:"center",color:"#334155",background:"rgba(255,255,255,0.02)",borderRadius:12,border:"1px solid rgba(99,102,241,0.1)"}}>No maintenance tasks. Schedule your first one above.</div>}
-        {tasks.map(t=>(
+        {tasks.map((t: any)=>(
           <div key={t.id} style={{background:"rgba(255,255,255,0.02)",borderRadius:12,padding:16,border:"1px solid rgba(99,102,241,0.1)"}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexWrap:"wrap",gap:10}}>
               <div>

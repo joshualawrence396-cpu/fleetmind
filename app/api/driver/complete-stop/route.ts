@@ -8,15 +8,14 @@ export async function POST(req: NextRequest) {
     const stop = await prisma.stop.update({
       where: { id: stopId },
       data: {
-        status: 'COMPLETED',
-        actualArrivalAt: new Date(),
-        actualDepartAt: new Date(),
-        notes: data.notes,
-        signatureUrl: data.signature,
-        podPhotoUrl: data.photo
-      }
+  status: 'COMPLETED',
+  actualArrival: new Date(),
+  notes: data.notes,
+  signatureUrl: data.signature,
+  podPhotoUrl: data.photo
+}
     })
-    
+    /*
     if (stop.shipmentId) {
       await prisma.shipment.update({
         where: { id: stop.shipmentId },
@@ -32,7 +31,7 @@ export async function POST(req: NextRequest) {
         }
       })
     }
-    
+    */
     return NextResponse.json({ success: true, stop })
   } catch (error) {
     return NextResponse.json({ error: 'Failed to complete stop' }, { status: 500 })

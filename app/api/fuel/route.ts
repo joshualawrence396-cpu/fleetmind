@@ -1,23 +1,65 @@
-import { NextResponse } from "next/server"
-import { PrismaClient } from "@prisma/client"
+import { NextRequest, NextResponse } from 'next/server'
+import { PrismaClient } from '@prisma/client'
+
 const prisma = new PrismaClient()
 
 export async function GET() {
   try {
-    const entries = await prisma.fuelEntry.findMany({ include: { vehicle: true }, orderBy: { createdAt: "desc" } })
+    const entries = await prisma.fuelEntry.findMany({
+      include: {
+        vehicle: true,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    })
+
     return NextResponse.json(entries)
-  } catch { return NextResponse.json([]) }
+  } catch {
+    return NextResponse.json([])
+  }
 }
 
-export async function POST(request) {
+export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
+
     const entry = await prisma.fuelEntry.create({
-      data: { vehicleId: body.vehicleId, driverId: body.driverId || null, litres: parseFloat(body.litres), costPerLitre: body.costPerLitre ? parseFloat(body.costPerLitre) : null, totalCost: parseFloat(body.litres) * parseFloat(body.costPerLitre || 0), station: body.station || null, odometerKm: body.odometerKm ? parseInt(body.odometerKm) : null, date: body.date ? new Date(body.date) : new Date() },
-      include: { vehicle: true }
+      data: {
+        vehicleId: body.vehicleId,
+        driverId: body.driverId || null,
+        litres: parseFloat(body.litres),
+        costPerLitre: body.costPerLitre
+          ? parseFloat(body.costPerLitre)
+          : null,
+        totalCost:
+          parseFloat(body.litres) *
+          parseFloat(body.costPerLitre || '0'),
+        station: body.station || null,
+        odometerKm: body.odometerKm
+          ? parseInt(body.odometerKm, 10)
+          : null,
+        date: body.date
+          ? new Date(body.date)
+          : new Date(),
+      },
+      include: {
+        vehicle: true,
+      },
     })
+
     return NextResponse.json(entry)
   } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json(
+      {
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Unknown error',
+      },
+      {
+        status: 500,
+      }
+    )
   }
 }

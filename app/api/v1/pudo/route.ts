@@ -13,20 +13,32 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   try {
     const { shipmentId, pudoId, customerEmail } = await req.json()
+
     const pudo = PUDO_LOCATIONS.find(p => p.id === pudoId)
-    
+
     if (!pudo) {
-      return NextResponse.json({ error: 'PUDO location not found' }, { status: 404 })
+      return NextResponse.json(
+        { error: 'PUDO location not found' },
+        { status: 404 }
+      )
     }
-    
-    // Redirect shipment to PUDO locker
+
     return NextResponse.json({
       success: true,
-      message: Package will be delivered to ,
-      pickupCode: PUDO-,
-      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days
+      message: `Package will be delivered to ${pudo.name}`,
+      pickupCode: `PUDO-${Date.now()}`,
+      shipmentId,
+      customerEmail,
+      expiresAt: new Date(
+        Date.now() + 7 * 24 * 60 * 60 * 1000
+      )
     })
   } catch (error) {
-    return NextResponse.json({ error: 'Failed to redirect to PUDO' }, { status: 500 })
+    console.error('PUDO error:', error)
+
+    return NextResponse.json(
+      { error: 'Failed to redirect to PUDO' },
+      { status: 500 }
+    )
   }
 }

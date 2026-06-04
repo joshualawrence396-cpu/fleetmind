@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
     
     return NextResponse.json({
       id: driver.id,
-      name: driver.fullName,
+      name: driver.name,
       phone: driver.phone
     })
   } catch (error) {

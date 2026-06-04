@@ -1,4 +1,4 @@
-﻿export interface Location {
+export interface Location {
   id: string;
   lat: number;
   lng: number;
@@ -37,7 +37,7 @@ export class RoutingClient {
     timeLimitSeconds: number = 30
   ): Promise<{ success: boolean; routes: OptimizedRoute[]; unrouted: string[]; totalDistance: number }> {
     try {
-      const response = await fetch(${this.baseUrl}/api/optimize, {
+      const response = await fetch(`${this.baseUrl}/api/optimize`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -58,7 +58,7 @@ export class RoutingClient {
   
   async health(): Promise<boolean> {
     try {
-      const response = await fetch(${this.baseUrl}/api/health);
+      const response = await fetch(`${this.baseUrl}/api/health`);
       const data = await response.json();
       return data.status === 'healthy';
     } catch {
@@ -68,3 +68,4 @@ export class RoutingClient {
 }
 
 export const routingClient = new RoutingClient();
+

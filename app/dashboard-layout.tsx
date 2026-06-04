@@ -1,4 +1,3 @@
-@"
 "use client";
 
 import { useState, useEffect } from "react";
@@ -148,4 +147,3 @@ export default function DashboardLayout({
     </div>
   );
 }
-"@ | Out-File -FilePath src\app\dashboard\layout.tsx -Encoding utf8

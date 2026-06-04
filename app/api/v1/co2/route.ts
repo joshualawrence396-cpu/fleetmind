@@ -4,27 +4,60 @@ import { prisma } from '@/lib/prisma'
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url)
-    const startDate = new Date(searchParams.get('start') || '')
-    const endDate = new Date(searchParams.get('end') || '')
-    
-    // Calculate CO2 emissions from shipments
-    const shipments = await prisma.shipment.findMany({
+
+    const startDate = searchParams.get('startDate')
+      ? new Date(searchParams.get('startDate')!)
+      : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+
+    const endDate = searchParams.get('endDate')
+      ? new Date(searchParams.get('endDate')!)
+      : new Date()
+
+    // Use orders instead of shipments
+    const orders = await prisma.order.findMany({
       where: {
-        createdAt: { gte: startDate, lte: endDate },
-        status: 'DELIVERED'
+        createdAt: {
+          gte: startDate,
+          lte: endDate
+        },
+        status: 'COMPLETED'
+      },
+      select: {
+        id: true,
+        weightKg: true,
+        createdAt: true
       }
     })
-    
-    // Rough estimate: 0.2 kg CO2 per km per parcel
-    const totalEmissions = shipments.reduce((sum, s) => sum + (s.weightKg * 0.2), 0)
-    
+
+    const totalWeight = orders.reduce(
+      (sum, order) => sum + (order.weightKg ?? 0),
+      0
+    )
+
+    const estimatedCO2Kg = totalWeight * 0.12
+
     return NextResponse.json({
-      period: { start: startDate, end: endDate },
-      totalShipments: shipments.length,
-      totalCO2Kg: totalEmissions.toFixed(2),
-      offsetCost: (totalEmissions * 0.05).toFixed(2) // .05 per kg CO2
+      success: true,
+      period: {
+        startDate,
+        endDate
+      },
+      metrics: {
+        totalOrders: orders.length,
+        totalWeightKg: totalWeight,
+        estimatedCO2Kg
+      }
     })
   } catch (error) {
-    return NextResponse.json({ error: 'Failed to calculate CO2' }, { status: 500 })
+    console.error('CO2 calculation error:', error)
+
+    return NextResponse.json(
+      {
+        error: 'Failed to calculate CO2 emissions'
+      },
+      {
+        status: 500
+      }
+    )
   }
 }

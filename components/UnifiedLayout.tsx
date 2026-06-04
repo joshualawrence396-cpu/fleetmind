@@ -1,13 +1,16 @@
-﻿'use client'
+'use client'
+import type { ReactNode } from 'react'
 
 import { useState, useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 
-export default function UnifiedLayout({ children }) {
+export default function UnifiedLayout({ children }: { children: ReactNode }) {
   const router = useRouter()
   const pathname = usePathname()
   const [sidebarOpen, setSidebarOpen] = useState(true)
-  const [user, setUser] = useState(null)
+  type User = { name?: string; role?: string }
+
+const [user, setUser] = useState<User | null>(null)
 
   useEffect(() => {
     const userData = localStorage.getItem('user')
@@ -22,15 +25,15 @@ export default function UnifiedLayout({ children }) {
   }
 
   const navItems = [
-    { name: 'Dashboard', icon: '📊', path: '/dashboard', color: '#3b82f6' },
-    { name: 'Fleet Tracker', icon: '📍', path: '/fleet-tracker', color: '#10b981' },
-    { name: 'Vehicles', icon: '🚚', path: '/admin/vehicles', color: '#8b5cf6' },
-    { name: 'Drivers', icon: '👨‍✈️', path: '/admin/drivers', color: '#f59e0b' },
-    { name: 'Warehouse', icon: '🏭', path: '/warehouse', color: '#ec4899' },
-    { name: 'Orders', icon: '📦', path: '/admin/orders', color: '#06b6d4' },
-    { name: 'Analytics', icon: '📈', path: '/analytics', color: '#f97316' },
-    { name: 'Optimize', icon: '🗺️', path: '/optimize', color: '#14b8a6' },
-    { name: 'Admin', icon: '⚙️', path: '/admin/portal', color: '#ef4444' }
+    { name: 'Dashboard', icon: '??', path: '/dashboard', color: '#3b82f6' },
+    { name: 'Fleet Tracker', icon: '??', path: '/fleet-tracker', color: '#10b981' },
+    { name: 'Vehicles', icon: '??', path: '/admin/vehicles', color: '#8b5cf6' },
+    { name: 'Drivers', icon: '?????', path: '/admin/drivers', color: '#f59e0b' },
+    { name: 'Warehouse', icon: '??', path: '/warehouse', color: '#ec4899' },
+    { name: 'Orders', icon: '??', path: '/admin/orders', color: '#06b6d4' },
+    { name: 'Analytics', icon: '??', path: '/analytics', color: '#f97316' },
+    { name: 'Optimize', icon: '???', path: '/optimize', color: '#14b8a6' },
+    { name: 'Admin', icon: '??', path: '/admin/portal', color: '#ef4444' }
   ]
 
   return (
@@ -142,11 +145,11 @@ export default function UnifiedLayout({ children }) {
               color: '#cbd5e1'
             }}
           >
-            ☰
+            ?
           </button>
           <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
             <div style={{ background: '#0f172a', padding: '4px 12px', borderRadius: '8px' }}>
-              <span style={{ color: '#10b981', fontSize: '12px' }}>● System Online</span>
+              <span style={{ color: '#10b981', fontSize: '12px' }}>? System Online</span>
             </div>
           </div>
         </div>
@@ -159,3 +162,5 @@ export default function UnifiedLayout({ children }) {
     </div>
   )
 }
+
+

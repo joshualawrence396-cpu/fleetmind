@@ -1,4 +1,3 @@
-﻿import { resolve } from 'tsp-solver';
 
 interface Location {
   id: string;
@@ -26,10 +25,18 @@ function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
 }
 
 // Simple bin packing algorithm for vehicle assignment
-function assignToVehicles(locations: Location[], vehicles: Vehicle[], depot: Location): any {
+interface RouteAssignment {
+  vehicleId: string;
+  stops: Location[];
+  currentCapacity: number;
+  totalDistance: number;
+  stopIds?: string[];
+}
+
+function assignToVehicles(locations: Location[], vehicles: Vehicle[], depot: Location): RouteAssignment[] {
   // Sort locations by demand (largest first)
   const sorted = [...locations].sort((a, b) => b.demand - a.demand);
-  const routes: any[] = [];
+  const routes: RouteAssignment[] = [];
   
   for (const vehicle of vehicles) {
     routes.push({
@@ -42,8 +49,7 @@ function assignToVehicles(locations: Location[], vehicles: Vehicle[], depot: Loc
   
   // Greedy assignment
   for (const location of sorted) {
-    let bestRoute = null;
-    let bestIndex = -1;
+    let bestRoute = -1;
     
     for (let i = 0; i < routes.length; i++) {
       if (routes[i].currentCapacity >= location.demand) {
@@ -166,3 +172,7 @@ export class RouteOptimizer {
     return path;
   }
 }
+
+
+
+

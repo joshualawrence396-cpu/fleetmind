@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState } from 'react'
 import UnifiedNavigation from '@/components/UnifiedNavigation'
@@ -7,7 +7,7 @@ export default function OptimizePage() {
   const [hubId, setHubId] = useState('')
   const [routeDate, setRouteDate] = useState('')
   const [loading, setLoading] = useState(false)
-  const [result, setResult] = useState(null)
+  const [result, setResult] = useState<any>(null)
 
   const handleOptimize = async () => {
     setLoading(true)
@@ -45,7 +45,7 @@ export default function OptimizePage() {
           </button>
           {result && result.success && (
             <div style={{ marginTop: '20px', padding: '16px', background: '#d1fae5', borderRadius: '8px' }}>
-              <p>✅ Routes optimized successfully!</p>
+              <p>? Routes optimized successfully!</p>
               <p>Total distance: {result.totalDistance} km</p>
             </div>
           )}

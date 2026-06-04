@@ -4,53 +4,88 @@ import { redis, STREAMS } from '@/lib/redis'
 export const dynamic = 'force-dynamic'
 
 export async function GET(req: NextRequest) {
+  if (!redis) {
+    return new Response('Redis unavailable', {
+      status: 500
+    })
+  }
+
+  const redisClient = redis
+
   const { searchParams } = new URL(req.url)
   const vehicleId = searchParams.get('vehicleId')
-  
+
   const encoder = new TextEncoder()
+
   const stream = new ReadableStream({
     start(controller) {
-      controller.enqueue(encoder.encode('data: connected\n\n'))
-      
+      controller.enqueue(
+        encoder.encode('data: connected\n\n')
+      )
+
       const subscribeToStream = async () => {
         let lastId = '0'
+
         while (true) {
           try {
-            const results = await redis.xread('BLOCK', 5000, 'STREAMS', 
-              STREAMS.VEHICLE_LOCATIONS, lastId)
-            
+            const results: any = await redisClient.xread(
+              [STREAMS.VEHICLE_LOCATIONS],
+              [lastId],
+              {
+                blockMS: 5000
+              }
+            )
+
             if (results) {
-              for (const [streamName, messages] of results) {
-                for (const [id, fields] of messages) {
-                  const data = JSON.parse(fields[1])
-                  
+              for (const stream of results as any[]) {
+                const messages = stream.messages ?? stream[1] ?? []
+
+                for (const message of messages) {
+                  const id = message.id ?? message[0]
+                  const fields = message.message ?? message[1]
+
+                  const rawData =
+                    fields?.data ??
+                    fields?.[1] ??
+                    '{}'
+
+                  const data = JSON.parse(rawData)
+
                   if (!vehicleId || data.vehicleId === vehicleId) {
-                    controller.enqueue(encoder.encode(data: \n\n))
+                    controller.enqueue(
+                      encoder.encode(
+                        `data: ${JSON.stringify(data)}\n\n`
+                      )
+                    )
                   }
+
                   lastId = id
                 }
               }
             }
           } catch (error) {
             console.error('SSE error:', error)
-            await new Promise(resolve => setTimeout(resolve, 1000))
+
+            await new Promise(resolve =>
+              setTimeout(resolve, 1000)
+            )
           }
         }
       }
-      
-      subscribeToStream()
-      
+
+      void subscribeToStream()
+
       req.signal.addEventListener('abort', () => {
         controller.close()
       })
     }
   })
-  
+
   return new Response(stream, {
     headers: {
       'Content-Type': 'text/event-stream',
       'Cache-Control': 'no-cache',
-      'Connection': 'keep-alive',
-    },
+      Connection: 'keep-alive'
+    }
   })
 }

@@ -1,12 +1,17 @@
-﻿'use client'
+'use client'
 
-import { useState, useEffect } from 'react'
+import { ReactNode, useState, useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 
-export default function AdminLayout({ children }) {
+interface AdminLayoutProps {
+  children: ReactNode
+}
+
+
+export default function AdminLayout({ children }: AdminLayoutProps) {
   const router = useRouter()
   const pathname = usePathname()
-  const [user, setUser] = useState(null)
+  const [user, setUser] = useState<{ name?: string } | null>(null)
 
   useEffect(() => {
     const userData = localStorage.getItem('user')
@@ -19,13 +24,13 @@ export default function AdminLayout({ children }) {
   }
 
   const navItems = [
-    { name: 'Dashboard', icon: '📊', path: '/dashboard' },
-    { name: 'Fleet', icon: '🚚', path: '/admin/vehicles' },
-    { name: 'Drivers', icon: '👨‍✈️', path: '/admin/drivers' },
-    { name: 'Warehouse', icon: '🏭', path: '/warehouse' },
-    { name: 'Orders', icon: '📦', path: '/admin/orders' },
-    { name: 'Analytics', icon: '📈', path: '/analytics' },
-    { name: 'Database', icon: '🗄️', path: '/admin/database' }
+    { name: 'Dashboard', icon: '??', path: '/dashboard' },
+    { name: 'Fleet', icon: '??', path: '/admin/vehicles' },
+    { name: 'Drivers', icon: '?????', path: '/admin/drivers' },
+    { name: 'Warehouse', icon: '??', path: '/warehouse' },
+    { name: 'Orders', icon: '??', path: '/admin/orders' },
+    { name: 'Analytics', icon: '??', path: '/analytics' },
+    { name: 'Database', icon: '???', path: '/admin/database' }
   ]
 
   return (
@@ -82,3 +87,4 @@ export default function AdminLayout({ children }) {
     </div>
   )
 }
+

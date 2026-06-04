@@ -3,7 +3,22 @@
 import { useState } from "react";
 
 export default function ChatPage() {
-  const [selectedUser, setSelectedUser] = useState(null);
+ interface User {
+  id: number
+  name: string
+  role: string
+  online: boolean
+}
+
+interface Message {
+  id: number
+  userId: number
+  text: string
+  time: string
+  isOwn: boolean
+}
+
+const [selectedUser, setSelectedUser] = useState<User | null>(null)
   const [message, setMessage] = useState("");
   
   const users = [
@@ -14,7 +29,7 @@ export default function ChatPage() {
     { id: 5, name: "Sarah Johnson", role: "Dispatcher", online: true },
   ];
 
-  const [messages, setMessages] = useState([
+ const [messages, setMessages] = useState<Message[]>([
     { id: 1, userId: 1, text: "Hello, what's my next delivery?", time: "10:30 AM", isOwn: false },
     { id: 2, userId: 1, text: "You have a pickup at Smith Warehouse", time: "10:32 AM", isOwn: true },
     { id: 3, userId: 2, text: "I'm running late", time: "09:15 AM", isOwn: false },

@@ -16,7 +16,7 @@ export function APIDocumentation() {
     { id:"analytics", method:"GET", path:"/api/analytics", desc:"Get fleet analytics summary", response:'{ totalRevenue, completionRate, pendingOrders, activeVehicles, ... }' },
   ]
 
-  const methodColor = (m) => m==="GET"?"#10b981":m==="POST"?"#3b82f6":m==="PATCH"?"#f59e0b":"#ef4444"
+  const methodColor = (m: string) => m==="GET"?"#10b981":m==="POST"?"#3b82f6":m==="PATCH"?"#f59e0b":"#ef4444"
 
   return (
     <div>

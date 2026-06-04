@@ -2,13 +2,24 @@
 
 import { useState } from 'react'
 
-export default function CustomerPortal() {
-  const [orderNumber, setOrderNumber] = useState('')
-  const [order, setOrder] = useState(null)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
+interface Order {
+  orderNumber: string
+  status: string
+  customerName: string
+  pickupAddress: string
+  deliveryAddress: string
+  driverName?: string
+  scheduledDate?: string
+  createdAt: string
+}
 
-  const trackOrder = async () => {
+export default function CustomerPortal() {
+  const [orderNumber, setOrderNumber] = useState<string>('')
+  const [order, setOrder] = useState<Order | null>(null)
+  const [loading, setLoading] = useState<boolean>(false)
+  const [error, setError] = useState<string>('')
+
+  const trackOrder = async (): Promise<void> => {
     if (!orderNumber.trim()) return
 
     setLoading(true)
@@ -16,14 +27,15 @@ export default function CustomerPortal() {
 
     try {
       const response = await fetch(`/api/orders/track/${orderNumber}`)
+
       if (response.ok) {
-        const data = await response.json()
+        const data: Order = await response.json()
         setOrder(data)
       } else {
         setError('Order not found')
         setOrder(null)
       }
-    } catch (err) {
+    } catch {
       setError('Failed to track order')
       setOrder(null)
     }
@@ -31,12 +43,16 @@ export default function CustomerPortal() {
     setLoading(false)
   }
 
-  const getStatusColor = (status) => {
+  const getStatusColor = (status: string): string => {
     switch (status) {
-      case 'COMPLETED': return 'text-green-600 bg-green-100'
-      case 'IN_PROGRESS': return 'text-blue-600 bg-blue-100'
-      case 'PENDING': return 'text-yellow-600 bg-yellow-100'
-      default: return 'text-gray-600 bg-gray-100'
+      case 'COMPLETED':
+        return 'text-green-600 bg-green-100'
+      case 'IN_PROGRESS':
+        return 'text-blue-600 bg-blue-100'
+      case 'PENDING':
+        return 'text-yellow-600 bg-yellow-100'
+      default:
+        return 'text-gray-600 bg-gray-100'
     }
   }
 
@@ -44,15 +60,21 @@ export default function CustomerPortal() {
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md mx-auto bg-white rounded-lg shadow-md p-6">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">FleetMind</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            FleetMind
+          </h1>
           <p className="text-gray-600">Track Your Delivery</p>
         </div>
 
         <div className="space-y-4">
           <div>
-            <label htmlFor="orderNumber" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="orderNumber"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Order Number
             </label>
+
             <input
               type="text"
               id="orderNumber"
@@ -72,81 +94,120 @@ export default function CustomerPortal() {
           </button>
 
           {error && (
-            <div className="text-red-600 text-sm text-center">{error}</div>
+            <div className="text-red-600 text-sm text-center">
+              {error}
+            </div>
           )}
         </div>
 
         {order && (
           <div className="mt-8 border-t pt-6">
-            <h2 className="text-xl font-semibold mb-4">Order Details</h2>
+            <h2 className="text-xl font-semibold mb-4">
+              Order Details
+            </h2>
 
             <div className="space-y-3">
               <div className="flex justify-between">
-                <span className="text-gray-600">Order Number:</span>
-                <span className="font-medium">{order.orderNumber}</span>
+                <span className="text-gray-600">
+                  Order Number:
+                </span>
+                <span className="font-medium">
+                  {order.orderNumber}
+                </span>
               </div>
 
               <div className="flex justify-between">
                 <span className="text-gray-600">Status:</span>
-                <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
+                <span
+                  className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                    order.status
+                  )}`}
+                >
                   {order.status.replace('_', ' ')}
                 </span>
               </div>
 
               <div className="flex justify-between">
-                <span className="text-gray-600">Customer:</span>
-                <span className="font-medium">{order.customerName}</span>
+                <span className="text-gray-600">
+                  Customer:
+                </span>
+                <span className="font-medium">
+                  {order.customerName}
+                </span>
               </div>
 
               <div className="flex justify-between">
                 <span className="text-gray-600">Pickup:</span>
-                <span className="font-medium text-sm">{order.pickupAddress}</span>
+                <span className="font-medium text-sm">
+                  {order.pickupAddress}
+                </span>
               </div>
 
               <div className="flex justify-between">
                 <span className="text-gray-600">Delivery:</span>
-                <span className="font-medium text-sm">{order.deliveryAddress}</span>
+                <span className="font-medium text-sm">
+                  {order.deliveryAddress}
+                </span>
               </div>
 
               {order.driverName && (
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Driver:</span>
-                  <span className="font-medium">{order.driverName}</span>
+                  <span className="text-gray-600">
+                    Driver:
+                  </span>
+                  <span className="font-medium">
+                    {order.driverName}
+                  </span>
                 </div>
               )}
 
               {order.scheduledDate && (
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Scheduled:</span>
+                  <span className="text-gray-600">
+                    Scheduled:
+                  </span>
                   <span className="font-medium">
-                    {new Date(order.scheduledDate).toLocaleDateString()}
+                    {new Date(
+                      order.scheduledDate
+                    ).toLocaleDateString()}
                   </span>
                 </div>
               )}
             </div>
 
             <div className="mt-6">
-              <h3 className="text-lg font-medium mb-2">Delivery Timeline</h3>
+              <h3 className="text-lg font-medium mb-2">
+                Delivery Timeline
+              </h3>
+
               <div className="space-y-2">
                 <div className="flex items-center space-x-3">
                   <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                  <span className="text-sm">Order Created</span>
+                  <span className="text-sm">
+                    Order Created
+                  </span>
                   <span className="text-xs text-gray-500 ml-auto">
-                    {new Date(order.createdAt).toLocaleDateString()}
+                    {new Date(
+                      order.createdAt
+                    ).toLocaleDateString()}
                   </span>
                 </div>
 
                 {order.status === 'IN_PROGRESS' && (
                   <div className="flex items-center space-x-3">
                     <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-                    <span className="text-sm">Out for Delivery</span>
+                    <span className="text-sm">
+                      Out for Delivery
+                    </span>
                   </div>
                 )}
 
                 {order.status === 'COMPLETED' && (
                   <div className="flex items-center space-x-3">
                     <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                    <span className="text-sm">Delivered</span>
+                    <span className="text-sm">
+                      Delivered
+                    </span>
                   </div>
                 )}
               </div>

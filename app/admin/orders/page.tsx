@@ -1,11 +1,23 @@
 ﻿'use client'
 
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 
 export default function OrdersPage() {
   const router = useRouter()
-  const [orders, setOrders] = useState([])
+  interface Order {
+  id?: string
+  recipientName?: string
+  trackingNumber?: string
+  status?: string
+  origin?: {
+    address?: string
+  }
+  destination?: {
+    address?: string
+  }
+}
+const [orders, setOrders] = useState<Order[]>([])
   const [showModal, setShowModal] = useState(false)
   const [loading, setLoading] = useState(false)
   const [geocoding, setGeocoding] = useState(false)
@@ -38,7 +50,11 @@ export default function OrdersPage() {
   }
 
   // Geocode address function
-  const geocodeAddress = async (address, city, postalCode) => {
+  const geocodeAddress = async (
+  address: string,
+  city: string,
+  postalCode: string
+) => {
     const fullAddress = address + ', ' + city + ', ' + postalCode + ', South Africa'
     // Simulate geocoding - in production use Google Maps API
     return {
@@ -48,7 +64,9 @@ export default function OrdersPage() {
     }
   }
 
-  const handleCreateOrder = async (e) => {
+  const handleCreateOrder = async (
+  e: React.FormEvent<HTMLFormElement>
+) => {
     e.preventDefault()
     setLoading(true)
     setGeocoding(true)
@@ -110,10 +128,16 @@ export default function OrdersPage() {
         const error = await response.json()
         alert('Failed to create order: ' + (error.error || 'Unknown error'))
       }
-    } catch (error) {
-      console.error('Error:', error)
-      alert('Error creating order: ' + error.message)
-    } finally {
+    } catch (error: unknown) {
+  console.error('Error:', error)
+
+  const message =
+    error instanceof Error
+      ? error.message
+      : 'Unknown error'
+
+  alert('Error creating order: ' + message)
+} finally {
       setLoading(false)
       setGeocoding(false)
     }
@@ -203,7 +227,7 @@ export default function OrdersPage() {
               ))}
               {orders.length === 0 && (
                 <tr>
-                  <td colSpan="6" style={{ padding: '40px', textAlign: 'center', color: '#6b7280' }}>
+                  <td colSpan={6} style={{ padding: '40px', textAlign: 'center', color: '#6b7280' }}>
                     No orders yet. Click "Create Order" to get started.
                   </td>
                 </tr>

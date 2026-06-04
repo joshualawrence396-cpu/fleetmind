@@ -1,4 +1,4 @@
-﻿// utils/notifications.ts
+// utils/notifications.ts
 export const initNotifications = async () => {
   if ('Notification' in window) {
     const permission = await Notification.requestPermission()
@@ -20,7 +20,7 @@ export const initNotifications = async () => {
   }
 }
 
-export const showNotification = (title, body) => {
+export const showNotification = (title: string, body: string): void => {
   if ('Notification' in window && Notification.permission === 'granted') {
     new Notification(title, { body, icon: '/icons/icon-192x192.png' })
   }

@@ -49,9 +49,9 @@ export async function GET(request: NextRequest) {
     const pendingOrders = orders.filter(o => o.status === 'PENDING').length
 
     // Calculate revenue (assuming each order has a value)
-    const totalRevenue = orders
-      .filter(o => o.status === 'DELIVERED')
-      .reduce((sum, order) => sum + (order.value || 0), 0)
+   const totalRevenue = orders
+  .filter(o => o.status === 'DELIVERED')
+  .reduce((sum, order) => sum + (order.declaredValue || 0), 0)
 
     // Fleet utilization
     const activeVehicles = await prisma.vehicle.count({
@@ -63,10 +63,12 @@ export async function GET(request: NextRequest) {
     const fleetUtilization = totalVehicles > 0 ? Math.round((activeVehicles / totalVehicles) * 100) : 0
 
     // Average delivery time (mock calculation)
-    const deliveredOrders = orders.filter(o => o.status === 'DELIVERED' && o.deliveredAt && o.createdAt)
+    const deliveredOrders = orders.filter(
+  o => o.status === 'DELIVERED' && o.completedAt
+)
     const avgDeliveryTime = deliveredOrders.length > 0
       ? deliveredOrders.reduce((sum, order) => {
-          const deliveryTime = (new Date(order.deliveredAt!).getTime() - new Date(order.createdAt).getTime()) / (1000 * 60 * 60)
+          const deliveryTime = (new Date(order.completedAt!).getTime() - new Date(order.createdAt).getTime()) / (1000 * 60 * 60)
           return sum + deliveryTime
         }, 0) / deliveredOrders.length
       : 0
@@ -97,7 +99,7 @@ export async function GET(request: NextRequest) {
       : 0
 
     // Fuel and maintenance data
-    const fuelLogs = await prisma.fuelLog.findMany({
+    const fuelLogs = await prisma.fuelEntry.findMany({
       where: {
         createdAt: {
           gte: startDate
@@ -105,7 +107,7 @@ export async function GET(request: NextRequest) {
       }
     })
 
-    const maintenanceRecords = await prisma.maintenance.findMany({
+    const maintenanceRecords = await prisma.maintenanceRecord.findMany({
       where: {
         createdAt: {
           gte: startDate
@@ -113,9 +115,9 @@ export async function GET(request: NextRequest) {
       }
     })
 
-    const avgFuelEconomy = fuelLogs.length > 0
-      ? fuelLogs.reduce((sum, log) => sum + (log.fuelEfficiency || 0), 0) / fuelLogs.length
-      : 0
+  const avgFuelEconomy = fuelLogs.length > 0
+  ? fuelLogs.reduce((sum, log) => sum + log.litres, 0) / fuelLogs.length
+  : 0
 
     const maintenanceCost = maintenanceRecords.reduce((sum, m) => sum + (m.cost || 0), 0)
 

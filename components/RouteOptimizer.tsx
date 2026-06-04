@@ -3,9 +3,9 @@ import { useState, useEffect } from "react"
 import { Map, Zap, CheckCircle, Clock, Truck, Package } from "lucide-react"
 
 export function RouteOptimizer() {
-  const [routes, setRoutes] = useState([])
-  const [vehicles, setVehicles] = useState([])
-  const [orders, setOrders] = useState([])
+  const [routes, setRoutes] = useState<any[]>([])
+  const [vehicles, setVehicles] = useState<any[]>([])
+  const [orders, setOrders] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<any>(null)
   const [form, setForm] = useState({ vehicleId: "", orderIds: [] as string[], date: new Date().toISOString().split("T")[0] })

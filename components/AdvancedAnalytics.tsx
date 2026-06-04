@@ -3,7 +3,26 @@
 import { useState, useEffect } from 'react'
 
 export function AdvancedAnalytics() {
-  const [analytics, setAnalytics] = useState(null)
+  const [analytics, setAnalytics] = useState<{
+  totalRevenue?: number
+  totalOrders?: number
+  totalDeliveries?: number
+  activeDrivers?: number
+  completedOrders?: number
+  fleetUtilization?: number
+  avgDeliveryTime?: number
+  inProgressOrders?: number
+  pendingOrders?: number
+  topDriver?: string
+  avgDriverRating?: number
+  onTimeRate?: number
+  avgFuelEconomy?: number
+  maintenanceCost?: number
+  vehicleDowntime?: number
+  customerSatisfaction?: number
+  repeatOrderRate?: number
+  complaintCount?: number
+} | null>(null)
   const [timeRange, setTimeRange] = useState('30d')
   const [loading, setLoading] = useState(true)
 
@@ -198,3 +217,4 @@ export function AdvancedAnalytics() {
     </div>
   )
 }
+

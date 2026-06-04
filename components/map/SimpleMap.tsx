@@ -1,28 +1,85 @@
-﻿'use client'
+'use client'
 
-export default function SimpleMap({ vehicles, onVehicleSelect }) {
-  // Static map image from OpenStreetMap (static mode)
-  const mapUrl = https://staticmap.openstreetmap.de/staticmap.php?center=-33.9249,18.4241&zoom=11&size=800x500&maptype=mapnik&markers=-33.9249,18.4241,red
+interface Vehicle {
+  id: string | number
+  registration?: string
+  driverName?: string
+  status?: string
+  latitude?: number
+  longitude?: number
+}
+
+interface SimpleMapProps {
+  vehicles: Vehicle[]
+  onVehicleSelect?: (vehicle: Vehicle) => void
+}
+
+export default function SimpleMap({
+  vehicles,
+  onVehicleSelect,
+}: SimpleMapProps) {
+  const mapUrl =
+    'https://staticmap.openstreetmap.de/staticmap.php?center=-33.9249,18.4241&zoom=10&size=1200x500'
 
   return (
-    <div style={{ position: 'relative', height: '500px', width: '100%' }}>
-      <img 
-        src={mapUrl} 
-        alt="Map"
-        style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '12px' }}
-      />
-      <div style={{ 
-        position: 'absolute', 
-        bottom: '10px', 
-        left: '10px', 
-        background: 'white', 
-        padding: '4px 8px', 
-        borderRadius: '4px',
-        fontSize: '11px',
-        color: '#666'
-      }}>
-        📍 Click on vehicles in the list to view location
+    <div>
+      <div
+        style={{
+          overflow: 'hidden',
+          borderRadius: '12px',
+          border: '1px solid #e5e7eb',
+        }}
+      >
+        <img
+          src={mapUrl}
+          alt="Fleet Map"
+          style={{
+            width: '100%',
+            height: '500px',
+            objectFit: 'cover',
+          }}
+        />
+      </div>
+
+      <div
+        style={{
+          marginTop: '16px',
+          display: 'grid',
+          gap: '12px',
+        }}
+      >
+        {vehicles.map((vehicle) => (
+          <div
+            key={vehicle.id}
+            onClick={() => onVehicleSelect?.(vehicle)}
+            style={{
+              padding: '12px',
+              border: '1px solid #e5e7eb',
+              borderRadius: '8px',
+              cursor: 'pointer',
+            }}
+          >
+            <strong>
+              {vehicle.registration || 'Unknown Vehicle'}
+            </strong>
+
+            <div>
+              Driver: {vehicle.driverName || 'Unassigned'}
+            </div>
+
+            <div>
+              Status: {vehicle.status || 'Unknown'}
+            </div>
+
+            {vehicle.latitude && vehicle.longitude && (
+              <div>
+                Location: {vehicle.latitude}, {vehicle.longitude}
+              </div>
+            )}
+          </div>
+        ))}
       </div>
     </div>
   )
 }
+
