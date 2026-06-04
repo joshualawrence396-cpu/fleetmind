@@ -68,7 +68,13 @@ Respond ONLY in valid JSON: { "action": string, "reason": string, "reassignTo": 
       data: { agentName: "cf_"+agent, trigger: payload?.trigger||"manual", inputPayload: payload, status: "COMPLETED", steps: [], outputPayload: result, durationMs: Date.now()-start, endedAt: new Date() }
     })
 
-    return NextResponse.json({ success: true, result, provider: "cloudflare", durationMs: Date.now()-start })
+   return NextResponse.json({
+  success: true,
+  reply: result.response || JSON.stringify(result),
+  result,
+  provider: "cloudflare",
+  durationMs: Date.now() - start
+})
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
